@@ -118,6 +118,40 @@ document.querySelector(".mac-terminal-body").addEventListener("click", () => {
   terminalInput.focus();
 });
 
+// Simulated Filesystem
+const files = {
+  "dossier.txt": {
+    size: "256 B",
+    owner: "Nee",
+    perms: "-rw-r--r--",
+    content: () => commands.about.action()
+  },
+  "skills.audit": {
+    size: "230 B",
+    owner: "Nee",
+    perms: "-rw-r--r--",
+    content: () => commands.skills.action()
+  },
+  "projects.md": {
+    size: "312 B",
+    owner: "Nee",
+    perms: "-rw-r--r--",
+    content: () => commands.projects.action()
+  },
+  "contact.key": {
+    size: "184 B",
+    owner: "Nee",
+    perms: "-rw-r--r--",
+    content: () => commands.contact.action()
+  },
+  "confidential.bin": {
+    size: "1.0 KB",
+    owner: "root",
+    perms: "-r--------",
+    content: () => "<span class='term-error'>[!] ACCESS DENIED: abbe jada info mat le tu kuch nahi kar pyaga!</span>"
+  }
+};
+
 // Command definitions with custom TUI layouts
 const commands = {
   help: {
@@ -126,6 +160,9 @@ const commands = {
       return [
         "┌──────────────────────── AVAILABLE SHELL COMMANDS ────────────────────────┐",
         "│  <span class='term-green'>help</span>      - Show this interactive TUI menu guide.                   │",
+        "│  <span class='term-green'>whoami</span>    - Print current user session details.                     │",
+        "│  <span class='term-green'>ls</span>        - List simulated folder contents and files.               │",
+        "│  <span class='term-green'>cat [file]</span>- Output content of a specific simulated file.            │",
         "│  <span class='term-green'>about</span>     - Display background dossier for Nee.                     │",
         "│  <span class='term-green'>skills</span>    - List technical security capabilities & audit level.     │",
         "│  <span class='term-green'>projects</span>  - Show defensive security auditing code repositories.     │",
@@ -134,6 +171,48 @@ const commands = {
         "│  <span class='term-green'>clear</span>     - Clear terminal buffer.                                  │",
         "└──────────────────────────────────────────────────────────────────────────┘"
       ].join("\n");
+    }
+  },
+  whoami: {
+    desc: "Print current user details.",
+    action: () => {
+      return [
+        "┌────────────────────────────── SESSION WHOAMI ─────────────────────────────┐",
+        "│  User: Nee (Security Researcher & Ethical Hacker)                         │",
+        "│  Host: nishant (sudonishant.github.io)                                    │",
+        "│  Role: Local Administrator / Auditor                                      │",
+        "└───────────────────────────────────────────────────────────────────────────┘"
+      ].join("\n");
+    }
+  },
+  ls: {
+    desc: "List files.",
+    action: () => {
+      const rows = [
+        "┌───────────────────────────────── DIRECTORY LISTING ───────────────────────────┐"
+      ];
+      for (const [name, meta] of Object.entries(files)) {
+        // format: perms size owner file
+        const spaceFile = name.padEnd(18, " ");
+        const spaceSize = meta.size.padStart(6, " ");
+        rows.push(`│  ${meta.perms}  1 ${meta.owner.padEnd(4, " ")}  staff  ${spaceSize}  ${spaceFile} │`);
+      }
+      rows.push("└───────────────────────────────────────────────────────────────────────────────┘");
+      return rows.join("\n");
+    }
+  },
+  cat: {
+    desc: "Read file.",
+    action: (filename) => {
+      if (!filename) {
+        return "<span class='term-error'>usage: cat [filename]</span>";
+      }
+      const file = files[filename.toLowerCase()];
+      if (file) {
+        return file.content();
+      } else {
+        return `<span class='term-error'>cat: ${filename}: No such file or directory</span>`;
+      }
     }
   },
   about: {
@@ -207,6 +286,17 @@ const commands = {
   }
 };
 
+// Check for sensitive queries (Aadhaar, passwords, location, etc.)
+function isSensitiveQuery(text) {
+  const sensitiveWords = [
+    "aadhaar", "aadhar", "sudo", "hack", "flag", "root", "password", 
+    "pass", "admin", "ip", "location", "personal", "secret", "cvv", 
+    "card", "details", "phone", "mobile", "address", "otp", "pin"
+  ];
+  const query = text.toLowerCase();
+  return sensitiveWords.some(word => query.includes(word));
+}
+
 // Handle command input
 terminalInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
@@ -221,19 +311,30 @@ terminalInput.addEventListener("keydown", (event) => {
     commandLine.innerHTML = `<span class="prompt"><span class="prompt-user">Nee</span>@<span class="prompt-host">nishant</span> <span class="prompt-tilde">~</span> %</span> <span class="term-input-echo">${inputVal}</span>`;
     terminalHistory.appendChild(commandLine);
 
-    // 2. Parse command
-    const parts = inputVal.split(" ");
-    const cmd = parts[0].toLowerCase();
-    
     const outputDiv = document.createElement("div");
     outputDiv.className = "terminal-output-block";
+
+    // 2. Intercept sensitive commands
+    if (isSensitiveQuery(inputVal)) {
+      outputDiv.innerHTML = "<span class='term-error'>[!] ERROR: abbe jada info mat le tu kuch nahi kar pyaga!</span>";
+      terminalHistory.appendChild(outputDiv);
+      const container = document.querySelector(".terminal-container");
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
+
+    // 3. Parse command
+    const parts = inputVal.split(" ");
+    const cmd = parts[0].toLowerCase();
 
     if (cmd === "clear") {
       terminalHistory.innerHTML = "";
       return;
     }
 
-    if (commands[cmd]) {
+    if (cmd === "cat") {
+      outputDiv.innerHTML = commands.cat.action(parts[1]);
+    } else if (commands[cmd]) {
       outputDiv.innerHTML = commands[cmd].action();
     } else {
       outputDiv.innerHTML = `<span class='term-error'>zsh: command not found: ${inputVal}. Type 'help' to show commands.</span>`;
