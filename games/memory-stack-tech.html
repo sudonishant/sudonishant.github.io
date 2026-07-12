@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Stack Tech | Nishant Kumar Arcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="../favicon-photo.png">
+  <link rel="stylesheet" href="arcade.css">
+</head>
+<body style="--arcade-accent:#8e7cff;--arcade-accent-2:#76ecff;">
+  <div class="arcade-page">
+    <header class="game-topbar">
+      <div class="topbar-left">
+        <a class="nav-chip" href="../games.html">Back to Arcade</a>
+        <div class="topbar-title">
+          <h1>Memory Stack Tech</h1>
+          <p>Elegant tech-card matching with combos and timed records.</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="arcade-button secondary" id="mute-btn" type="button">Sound On</button>
+        <button class="arcade-button secondary" id="restart-btn" type="button">Restart</button>
+      </div>
+    </header>
+
+    <main class="game-layout">
+      <section class="game-stage-panel">
+        <div class="hud" id="hud"></div>
+        <div class="dom-stage memory-layout" id="game-root"></div>
+        <p class="status-line" id="status-line">Choose a difficulty, watch the preview, and chase the cleanest clear time.</p>
+      </section>
+
+      <aside class="game-side-panel">
+        <section class="panel-card">
+          <div class="panel-header">
+            <h2 id="board-title">Top 10 Memory Times</h2>
+          </div>
+          <div class="leaderboard-list" id="leaderboard-list"></div>
+        </section>
+        <section class="panel-card">
+          <h3 id="note-title">Memory Notes</h3>
+          <p id="note-body">Fast back-to-back matches create combo bonuses. Best times are saved per difficulty.</p>
+          <p class="muted-line" id="record-summary"></p>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="overlay-screen" id="start-overlay">
+    <div class="overlay-card">
+      <p class="overlay-kicker">How to Play</p>
+      <h2>Flip clean. Remember fast.</h2>
+      <ul class="how-list">
+        <li>Pick a difficulty and watch the short reveal preview.</li>
+        <li>Match all pairs in the fewest moves and lowest time.</li>
+        <li>Quick chain matches add combo score without changing your time ranking.</li>
+        <li>Each difficulty keeps its own Top 10 board.</li>
+      </ul>
+      <div class="overlay-actions">
+        <button class="arcade-button primary" id="start-btn" type="button">Start Round</button>
+        <a class="arcade-button secondary" href="../games.html">Back to Arcade</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay-screen hidden" id="result-overlay">
+    <div class="overlay-card">
+      <p class="overlay-kicker">Round Complete</p>
+      <h2 id="result-title">Board cleared</h2>
+      <p id="result-text">Your time is ready.</p>
+      <ul class="result-stats" id="result-stats"></ul>
+      <p id="best-record"></p>
+      <p id="recent-rank"></p>
+      <div class="overlay-actions">
+        <button class="arcade-button primary" id="play-again-btn" type="button">Play Again</button>
+        <a class="arcade-button secondary" href="../games.html">Back to Arcade</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="arcade-core.js"></script>
+  <script src="memory-stack-tech.js"></script>
+</body>
+</html>

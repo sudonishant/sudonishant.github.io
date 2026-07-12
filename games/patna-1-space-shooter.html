@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patna-1 Space Shooter | Nishant Kumar Arcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="../favicon-photo.png">
+  <link rel="stylesheet" href="arcade.css">
+</head>
+<body style="--arcade-accent:#76ecff;--arcade-accent-2:#ff688c;">
+  <div class="arcade-page">
+    <header class="game-topbar">
+      <div class="topbar-left">
+        <a class="nav-chip" href="../games.html">Back to Arcade</a>
+        <div class="topbar-title">
+          <h1>Patna-1 Space Shooter</h1>
+          <p>Top-down arcade combat with waves, bosses, and power-ups.</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="arcade-button secondary" id="mute-btn" type="button">Sound On</button>
+        <button class="arcade-button secondary" id="pause-btn" type="button">Pause</button>
+        <button class="arcade-button secondary" id="restart-btn" type="button">Restart</button>
+      </div>
+    </header>
+
+    <main class="game-layout">
+      <section class="game-stage-panel">
+        <div class="hud" id="hud"></div>
+        <div class="stage-frame">
+          <canvas id="game-canvas" class="canvas-stage" width="960" height="540"></canvas>
+        </div>
+        <div class="mobile-controls" id="mobile-controls"></div>
+        <p class="status-line" id="status-line">Clear waves, collect power-ups, and survive the boss phase.</p>
+      </section>
+
+      <aside class="game-side-panel">
+        <section class="panel-card">
+          <div class="panel-header">
+            <h2 id="board-title">Top 10 Flights</h2>
+          </div>
+          <div class="leaderboard-list" id="leaderboard-list"></div>
+        </section>
+        <section class="panel-card">
+          <h3 id="note-title">Flight Notes</h3>
+          <p id="note-body">Rapid fire keeps pressure high. Shields buy time. Spread shot is strongest on wave swarms.</p>
+          <p class="muted-line" id="record-summary"></p>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="overlay-screen" id="start-overlay">
+    <div class="overlay-card">
+      <p class="overlay-kicker">How to Play</p>
+      <h2>Fly hard. Clear every wave.</h2>
+      <ul class="how-list">
+        <li>Move with `WASD` or arrow keys. Drag on touch screens to steer.</li>
+        <li>Your ship auto-fires. Stay active to keep the score multiplier alive.</li>
+        <li>Collect spread shot, shield, laser, and rapid-fire power-ups.</li>
+        <li>Beat the mini-boss and final boss to clear the run.</li>
+      </ul>
+      <div class="overlay-actions">
+        <button class="arcade-button primary" id="start-btn" type="button">Launch</button>
+        <a class="arcade-button secondary" href="../games.html">Back to Arcade</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay-screen hidden" id="result-overlay">
+    <div class="overlay-card">
+      <p class="overlay-kicker">Flight Result</p>
+      <h2 id="result-title">Run complete</h2>
+      <p id="result-text">Score summary ready.</p>
+      <ul class="result-stats" id="result-stats"></ul>
+      <p id="best-record"></p>
+      <p id="recent-rank"></p>
+      <div class="overlay-actions">
+        <button class="arcade-button primary" id="play-again-btn" type="button">Play Again</button>
+        <a class="arcade-button secondary" href="../games.html">Back to Arcade</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="arcade-core.js"></script>
+  <script src="patna-1-space-shooter.js"></script>
+</body>
+</html>
