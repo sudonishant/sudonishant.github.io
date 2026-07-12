@@ -31,6 +31,9 @@
   <div class="dashboard-container">
     <div class="terminal-window">
       
+      <!-- Moving CRT scan line scanner -->
+      <div class="crt-scanline"></div>
+      
       <!-- macOS-style Window Header -->
       <div class="terminal-window-header">
         <div class="window-buttons">
@@ -38,8 +41,8 @@
           <span class="win-btn win-btn-minimize"></span>
           <span class="win-btn win-btn-maximize"></span>
         </div>
-        <div class="window-title">guest@sudonishant-terminal: ~</div>
-        <div class="window-status"><span class="status-indicator-dot"></span> SESSION: SECURE</div>
+        <div class="window-title">root@sudonishant-exploit: ~</div>
+        <div class="window-status"><span class="status-indicator-dot alert-pulse"></span> INTRUSION_SIMULATION_ACTIVE</div>
       </div>
       
       <!-- Split-Pane Window Content -->
@@ -105,26 +108,13 @@
         <!-- Right Side Pane (CLI terminal simulator) -->
         <div class="panel-right">
           <div class="cli-screen">
-            <div class="welcome-message">
-==================================================
-  ___ _   _ ___   ___  _   _ ___ ___ _  _  _   _ ___ 
- / __| | | |   \ / _ \| \ | |_ _/ __| || |/ \ | |_ _|
- \__ \ |_| | |) | (_) |  \| || |\__ \ __ |  \| || | 
- |___/\___/|___/ \___/|_|\_|_|___|___/_||_|_|\_||_| 
-==================================================
-
-[+] Welcome to Secure Shell Terminal v2.5-Stable.
-[+] Session established dynamically.
-[+] Type <span class="term-highlight">'help'</span> to view available security shell commands.
-
-</div>
             <div class="terminal-history" id="terminal-history"></div>
             
-            <div class="terminal-input-row">
+            <div class="terminal-input-row" style="display: none;" id="input-area">
               <span class="prompt">
                 <span class="prompt-user">guest</span>@<span class="prompt-host">sudonishant</span>:<span class="prompt-tilde">~</span>$
               </span>
-              <input type="text" id="terminal-input" autofocus autocomplete="off" spellcheck="false" placeholder="Type command...">
+              <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" placeholder="Type command...">
             </div>
           </div>
         </div>

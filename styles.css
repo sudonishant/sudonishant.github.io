@@ -4,17 +4,18 @@
 */
 
 :root {
-  --bg-color: #080b0e;
-  --panel-bg: rgba(13, 17, 23, 0.85);
-  --border-color: rgba(0, 229, 255, 0.25);
-  --border-glow: rgba(0, 229, 255, 0.15);
+  --bg-color: #05070a;
+  --panel-bg: rgba(10, 14, 20, 0.9);
+  --border-color: rgba(0, 229, 255, 0.3);
+  --border-glow: rgba(0, 229, 255, 0.2);
   --text-primary: #cbd5e1;
   --text-muted: #64748b;
   --green-glow: #00ff66;
   --green-glow-shadow: rgba(0, 255, 102, 0.3);
   --cyan-glow: #00e5ff;
   --cyan-glow-shadow: rgba(0, 229, 255, 0.3);
-  --red-glow: #ff4a4a;
+  --red-glow: #ff3b3b;
+  --red-glow-shadow: rgba(255, 59, 59, 0.4);
   --yellow-glow: #e9b813;
   --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
 }
@@ -44,7 +45,7 @@ body, html {
   width: 100%;
   height: 100%;
   z-index: -2;
-  opacity: 0.12;
+  opacity: 0.16;
   pointer-events: none;
 }
 
@@ -56,12 +57,32 @@ body, html {
   width: 100%;
   height: 100%;
   background: 
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-    radial-gradient(circle, rgba(0, 229, 255, 0.03) 0%, rgba(0, 0, 0, 0.4) 100%);
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
+    radial-gradient(circle, rgba(0, 229, 255, 0.04) 0%, rgba(0, 0, 0, 0.45) 100%);
   background-size: 100% 4px, 100% 100%;
   z-index: 100;
   pointer-events: none;
   animation: crt-flicker 0.15s infinite;
+}
+
+/* Scanning CRT laser line */
+.crt-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 12px var(--cyan-glow);
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 99;
+  animation: scan-move 6s linear infinite;
+}
+
+@keyframes scan-move {
+  0% { top: 0%; }
+  100% { top: 100%; }
 }
 
 /* Dashboard Layout */
@@ -77,6 +98,7 @@ body, html {
 
 /* Terminal Window Frame */
 .terminal-window {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -86,9 +108,9 @@ body, html {
   background-color: var(--panel-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 8px 32px var(--border-glow), inset 0 0 12px rgba(0, 229, 255, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 8px 40px var(--border-glow), inset 0 0 15px rgba(0, 229, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   overflow: hidden;
 }
 
@@ -98,9 +120,10 @@ body, html {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background-color: rgba(7, 10, 14, 0.95);
+  background-color: rgba(6, 8, 12, 0.98);
   border-bottom: 1px solid var(--border-color);
   user-select: none;
+  z-index: 10;
 }
 
 .window-buttons {
@@ -117,7 +140,7 @@ body, html {
 
 .win-btn-close {
   background-color: var(--red-glow);
-  box-shadow: 0 0 8px rgba(255, 74, 74, 0.5);
+  box-shadow: 0 0 8px var(--red-glow-shadow);
 }
 
 .win-btn-minimize {
@@ -139,11 +162,11 @@ body, html {
 
 .window-status {
   font-size: 11px;
-  color: var(--green-glow);
+  color: var(--red-glow);
   display: flex;
   align-items: center;
   gap: 6px;
-  text-shadow: 0 0 6px var(--green-glow-shadow);
+  text-shadow: 0 0 6px var(--red-glow-shadow);
   font-weight: bold;
 }
 
@@ -151,8 +174,8 @@ body, html {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--green-glow);
-  box-shadow: 0 0 8px var(--green-glow);
+  background-color: var(--red-glow);
+  box-shadow: 0 0 8px var(--red-glow);
 }
 
 /* Split Pane Body */
@@ -166,24 +189,25 @@ body, html {
 .panel-left {
   width: 340px;
   border-right: 1px solid var(--border-color);
-  background-color: rgba(5, 7, 9, 0.4);
+  background-color: rgba(4, 6, 8, 0.5);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   overflow-y: auto;
+  z-index: 10;
 }
 
 .profile-frame {
   border: 1px solid var(--border-color);
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.7);
   border-radius: 4px;
   overflow: hidden;
-  box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.1);
+  box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.12);
 }
 
 .frame-header {
-  background-color: rgba(7, 10, 14, 0.85);
+  background-color: rgba(6, 8, 12, 0.9);
   border-bottom: 1px solid var(--border-color);
   padding: 6px 10px;
   display: flex;
@@ -222,9 +246,9 @@ body, html {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.4);
   padding: 12px 16px;
-  border: 1px solid rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.12);
   border-radius: 4px;
 }
 
@@ -245,11 +269,12 @@ body, html {
 /* Right Pane: Command Line Shell */
 .panel-right {
   flex: 1;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.35);
   padding: 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  z-index: 10;
 }
 
 .cli-screen {
@@ -259,19 +284,10 @@ body, html {
   overflow-y: auto;
 }
 
-.welcome-message {
-  white-space: pre;
-  color: var(--text-muted);
-  line-height: 1.4;
-  margin-bottom: 15px;
-  user-select: none;
-  font-size: 11px;
-}
-
 .terminal-history {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 15px;
 }
 
@@ -317,7 +333,7 @@ body, html {
 
 /* Color Classes for Command Logs */
 .term-input-echo {
-  color: var(--text-muted);
+  color: var(--text-primary);
   font-weight: bold;
 }
 
@@ -333,7 +349,13 @@ body, html {
 
 .term-error {
   color: var(--red-glow);
-  text-shadow: 0 0 5px rgba(255, 74, 74, 0.4);
+  text-shadow: 0 0 6px var(--red-glow-shadow);
+  font-weight: bold;
+}
+
+.term-warning {
+  color: var(--yellow-glow);
+  text-shadow: 0 0 5px rgba(233, 184, 19, 0.4);
 }
 
 .term-dim {
@@ -347,21 +369,45 @@ body, html {
   border-radius: 2px;
 }
 
+/* Hacking scanning styling */
+.scan-line-log {
+  animation: typing-appear 0.2s ease-out;
+}
+
+@keyframes typing-appear {
+  from { opacity: 0; transform: translateX(-5px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Glitch Effect on Title text */
+.glitch-title {
+  position: relative;
+  font-weight: bold;
+  animation: glitch 1.5s infinite;
+}
+
+@keyframes glitch {
+  0% { text-shadow: 2px -1px var(--red-glow-shadow), -2px 1px var(--green-glow-shadow); }
+  25% { text-shadow: -1px 2px var(--red-glow-shadow), 1px -2px var(--cyan-glow-shadow); }
+  50% { text-shadow: 2px 2px var(--red-glow-shadow), -2px -2px var(--green-glow-shadow); }
+  75% { text-shadow: -2px -1px var(--cyan-glow-shadow), 2px 1px var(--red-glow-shadow); }
+  100% { text-shadow: 1px -2px var(--green-glow-shadow), -1px 2px var(--cyan-glow-shadow); }
+}
+
 /* Animations */
 @keyframes crt-flicker {
-  0% { opacity: 0.99; }
+  0% { opacity: 0.985; }
   50% { opacity: 1; }
-  100% { opacity: 0.99; }
+  100% { opacity: 0.985; }
 }
 
-@keyframes ping-slow {
-  0% { transform: scale(1); opacity: 1; }
-  70% { transform: scale(2); opacity: 0; }
-  100% { transform: scale(1); opacity: 0; }
+@keyframes alert-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 8px var(--red-glow)); }
+  50% { opacity: 0.4; transform: scale(1.1); filter: drop-shadow(0 0 2px var(--red-glow)); }
 }
 
-.animate-ping-slow {
-  animation: ping-slow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+.alert-pulse {
+  animation: alert-pulse 1.4s infinite;
 }
 
 .animate-pulse {
@@ -370,7 +416,7 @@ body, html {
 
 @keyframes pulse {
   0%, 100% { opacity: 1; text-shadow: 0 0 8px var(--green-glow-shadow); }
-  50% { opacity: .5; text-shadow: 0 0 2px var(--green-glow-shadow); }
+  50% { opacity: .4; text-shadow: 0 0 2px var(--green-glow-shadow); }
 }
 
 /* Custom Scrollbar for Terminal Panels */
@@ -429,10 +475,6 @@ body, html {
   .system-stats {
     flex: 1;
     padding: 8px 12px;
-  }
-  
-  .welcome-message {
-    font-size: 8px;
   }
   
   .panel-right {
