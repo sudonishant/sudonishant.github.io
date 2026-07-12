@@ -254,6 +254,112 @@ body, html {
   border-radius: 3px;
 }
 
+/* GNU Nano Editor Overlay Styles */
+#nano-editor {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 42px);
+  background-color: #0c0f12;
+  display: flex;
+  flex-direction: column;
+  color: #ffffff;
+  padding: 10px;
+  z-index: 50;
+}
+
+.nano-header {
+  background-color: #ffffff;
+  color: #0c0f12;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+}
+
+#nano-textarea {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  resize: none;
+  padding: 10px 5px;
+  line-height: 1.5;
+}
+
+.nano-footer {
+  background-color: #0c0f12;
+  color: #ffffff;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px;
+  font-size: 11px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  user-select: none;
+}
+
+/* Interactive htop Overlay Styles */
+#htop-monitor {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 42px);
+  background-color: #0a0d10;
+  color: #00ff66;
+  font-family: var(--font-mono);
+  padding: 12px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  user-select: none;
+}
+
+.htop-header-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.htop-bar {
+  display: flex;
+  gap: 8px;
+  font-weight: bold;
+}
+
+.htop-bar-fill {
+  color: #00e5ff;
+}
+
+.htop-process-title {
+  background-color: #27c93f;
+  color: #000000;
+  padding: 2px 5px;
+  font-weight: bold;
+}
+
+.htop-process-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 5px 0;
+  line-height: 1.4;
+  color: #ffffff;
+}
+
+.htop-footer {
+  background-color: #00e5ff;
+  color: #000000;
+  padding: 2px 5px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
 /* Custom Scrollbar for macOS Terminal Screen */
 .terminal-container::-webkit-scrollbar {
   width: 5px;
