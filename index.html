@@ -3,350 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nishant Kumar | Portfolio Arcade</title>
-  <meta
-    name="description"
-    content="Nishant Kumar portfolio with projects, playable browser games, and a separate support page."
-  >
-  <meta
-    name="keywords"
-    content="Nishant Kumar, portfolio, browser games, web developer, Python developer, arcade"
-  >
-  <meta property="og:title" content="Nishant Kumar | Portfolio Arcade">
-  <meta
-    property="og:description"
-    content="Projects, playable browser games, and polished frontend builds."
-  >
+  <title>sudonishant | Security Researcher & Developer</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Neeshant (sudonishant) - Cybersecurity Analyst, Script Writer, and Student Developer. Interactive CRT hacker terminal portfolio.">
+  <meta name="keywords" content="sudonishant, cyber security, ethical hacker, portfolio, CRT terminal, matrix code, retro cli">
+  <meta name="author" content="sudonishant">
+  <meta property="og:title" content="sudonishant | Security Researcher & Developer">
+  <meta property="og:description" content="Interactive hacker terminal portfolio of Neeshant. Class 12 cybersecurity student.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://sudonishant.github.io/">
-  <meta property="og:image" content="https://sudonishant.github.io/main-photo.jpg">
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@400;600;700;800&display=swap"
-    rel="stylesheet"
-  >
-  <link rel="icon" type="image/png" href="favicon-photo.png">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
-<body data-page="home">
-  <a class="skip-link" href="#main-content">Skip to content</a>
-  <div class="noise"></div>
-  <canvas id="matrix-rain" aria-hidden="true"></canvas>
+<body>
+  <!-- HTML5 Canvas for high performance Matrix Digital Rain -->
+  <canvas id="matrix-canvas"></canvas>
 
-  <header class="site-header">
-    <div class="shell header-shell">
-      <a class="brand" href="#home">
-        <img class="brand-avatar" src="profile-photo.jpg" alt="Nishant Kumar">
-        <span class="brand-copy">
-          <strong>Nishant Kumar</strong>
-          <small>Portfolio Arcade</small>
-        </span>
-      </a>
+  <!-- Retro CRT Scanline and Flicker Overlay -->
+  <div class="crt-overlay"></div>
 
-      <button
-        class="menu-toggle"
-        type="button"
-        aria-expanded="false"
-        aria-controls="site-nav"
-        aria-label="Open navigation menu"
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+  <!-- Dashboard Shell -->
+  <div class="dashboard-container">
+    <div class="terminal-window">
+      
+      <!-- macOS-style Window Header -->
+      <div class="terminal-window-header">
+        <div class="window-buttons">
+          <span class="win-btn win-btn-close"></span>
+          <span class="win-btn win-btn-minimize"></span>
+          <span class="win-btn win-btn-maximize"></span>
+        </div>
+        <div class="window-title">guest@sudonishant-terminal: ~</div>
+        <div class="window-status"><span class="status-indicator-dot"></span> SESSION: SECURE</div>
+      </div>
+      
+      <!-- Split-Pane Window Content -->
+      <div class="terminal-window-body">
+        
+        <!-- Left Side Pane (Emoji Art + Quick Stats) -->
+        <div class="panel-left">
+          <div class="profile-frame">
+            <div class="frame-header">
+              <span class="frame-dot"></span>
+              <span class="frame-title">PORTRAIT_RENDER.EXE</span>
+            </div>
+            <pre class="emoji-art">⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤⬛⬛⬛🖤🟦🖤🟦🟦🟦🟦🖤⬛⬛⬛⬛
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🖤🖤⬛⬛⬛⬛⬛⬛🟦🟦🟦🟦🟦🟦🟦🖤🖤
+🟩🖤⬛⬛⬛⬛⬛⬛🖤🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛🟦🟦🟦🟦🖤⬛⬛⬛
+⬛⬛⬛⬛⬛⬛⬛🖤🖤🖤🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛🖤🟦🖤⬛⬛⬛⬛
+⬛⬛⬛⬛⬛⬛🖤🖤🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🟦🟦🖤⬛⬛
+⬛⬛⬛⬛⬛🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🖤⬛⬛⬛
+⬛⬛⬛⬛⬛🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🖤🖤🖤
+🟩🟩🟩🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🟩🟩🟩🟩
+⬛⬛⬛⬛🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🟩🖤🟩
+🖤⬛⬛🖤⬛⬛⬛⬛⬛⬛🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🟩⬛
+🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🟩
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🖤
+⬛⬛⬛⬛⬛⬛⬛🟩🏽🏽🏽🟫🟩🟩🏽🏼🏼🏽🟩⬛⬛⬛⬛⬛⬛⬛⬛🖤
+⬛⬛⬛⬛⬛⬛🖤🏼🏼🏼🏼🏼🏼🏼🏼🏼🏽🟩🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛
+⬛⬛⬛⬛⬛⬛🟩🏽🟩🖤⬛🖤🟩🏼🟩🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
+⬛⬛⬛⬛⬛⬛🖤🏽🖤⬛⬛⬛🖤🟩🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤
+🟦⬛⬛⬛⬛⬛🟩🏽🏽🟩🖤🏽🏽⬛⬛⬛🖤🟩🖤⬛⬛⬛⬛⬛⬛⬛⬛🟦
+🖤⬛⬛⬛⬛⬛🏽🏼🏻🏼🏼🏼🏽🏽🟩⬛🟩🏽🟩🟩🖤⬛⬛⬛⬛⬛⬛🟦
+⬛⬛⬛⬛⬛⬛🏼🏻🏻🏻🏻🏻🏽🏻🏼⬛🟩🏽🏽🏽🟩⬛⬛⬛⬛⬛⬛🖤
+⬛⬛⬛⬛⬛⬛🏽🏼🏻🏻🏻🏼🏻🏻🏼🖤🖤🏽🏼🟩🖤⬛⬛⬛⬛⬛⬛🟩
+⬛⬛⬛⬛⬛⬛🏼🏼🏼🏽🏽🏼🏻🏻🏽🟩🖤🖤🟩🖤⬛⬛⬛⬛⬛⬛🟩🟩
+⬛⬛⬛⬛⬛⬛🏽🏻🏻🏻🏻🏼🟩🟩⬛⬛⬛🟩🟩🖤⬛⬛⬛⬛⬛⬛🟩🟦
+⬛⬛⬛⬛⬛⬛🟩🏼🏻🏻🏻🏻🏼🏼🟫⬛🖤🟩🟩⬛⬛⬛⬛⬛⬛⬛🟦🟦
+⬛⬛⬛⬛⬛⬛🖤🏼🏼🏻🏻🏻🏼🏻🏼🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛🖤🟦
+⬛⬛⬛⬛⬛⬛⬛🏽🏼🏼🏽🏽🟩🏼🏽⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
+⬛⬛⬛⬛⬛⬛⬛🟩🏼🏽🏽🏽🏼🏼🟩⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
+🟦🟦🟦⬛⬛⬛⬛⬛🏽🏽🏼🏽🟩🏻🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🟦🟦</pre>
+          </div>
+          
+          <div class="system-stats">
+            <div class="stat-row">
+              <span class="stat-label">USER:</span>
+              <span class="stat-value text-green">sudonishant</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">CLASS:</span>
+              <span class="stat-value">Grade 12</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">ROLE:</span>
+              <span class="stat-value text-cyan">Security Researcher</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">SYSTEM:</span>
+              <span class="stat-value text-green">SECURE</span>
+            </div>
+          </div>
+        </div>
 
-      <nav class="nav" id="site-nav" aria-label="Main Navigation">
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#projects">Projects</a>
-        <a href="#games">Games</a>
-        <a href="blogs.html">Blog</a>
-        <a href="donate.html">Donate</a>
-        <a href="#contact">Contact</a>
-      </nav>
+        <!-- Right Side Pane (CLI terminal simulator) -->
+        <div class="panel-right">
+          <div class="cli-screen">
+            <div class="welcome-message">
+==================================================
+  ___ _   _ ___   ___  _   _ ___ ___ _  _  _   _ ___ 
+ / __| | | |   \ / _ \| \ | |_ _/ __| || |/ \ | |_ _|
+ \__ \ |_| | |) | (_) |  \| || |\__ \ __ |  \| || | 
+ |___/\___/|___/ \___/|_|\_|_|___|___/_||_|_|\_||_| 
+==================================================
+
+[+] Welcome to Secure Shell Terminal v2.5-Stable.
+[+] Session established dynamically.
+[+] Type <span class="term-highlight">'help'</span> to view available security shell commands.
+
+</div>
+            <div class="terminal-history" id="terminal-history"></div>
+            
+            <div class="terminal-input-row">
+              <span class="prompt">
+                <span class="prompt-user">guest</span>@<span class="prompt-host">sudonishant</span>:<span class="prompt-tilde">~</span>$
+              </span>
+              <input type="text" id="terminal-input" autofocus autocomplete="off" spellcheck="false" placeholder="Type command...">
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
-  </header>
-
-  <main id="main-content">
-    <section class="section hero hero-home" id="home">
-      <div class="shell hero-shell">
-        <div class="hero-copy" data-reveal>
-          <p class="eyebrow">Nishant Kumar</p>
-          <h1>Nishant Kumar</h1>
-          <h2 class="typing-line" id="hero-typing">Student developer shipping fast.</h2>
-          <p class="lede">
-            Class 12 developer from Bihar focused on web, Python, AI experiments, and a growing in-browser arcade.
-          </p>
-
-          <div class="hero-actions">
-            <a class="button primary" href="#games">Open Arcade</a>
-            <a class="button secondary" href="#projects">View Projects</a>
-          </div>
-
-          <div class="hero-badges">
-            <span>HTML / CSS / JS</span>
-            <span>Python + AI Tools</span>
-            <span>Playable Browser Games</span>
-          </div>
-        </div>
-
-        <div class="hero-visual" data-reveal>
-          <div class="terminal-mockup">
-            <div class="terminal-header">
-              <span class="terminal-btn btn-red"></span>
-              <span class="terminal-btn btn-yellow"></span>
-              <span class="terminal-btn btn-green"></span>
-              <span class="terminal-title">sudonishant@github: ~</span>
-            </div>
-            <div class="terminal-body">
-              <div class="terminal-content-grid">
-                <div class="terminal-art">
-                  ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤⬛⬛⬛🖤🟦🖤🟦🟦🟦🟦🖤⬛⬛⬛⬛<br>
-                  ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🖤🖤⬛⬛⬛⬛⬛⬛🟦🟦🟦🟦🟦🟦🟦🖤🖤<br>
-                  🟩🖤⬛⬛⬛⬛⬛⬛🖤🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛🟦🟦🟦🟦🖤⬛⬛⬛<br>
-                  ⬛⬛⬛⬛⬛⬛⬛🖤🖤🖤🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛🖤🟦🖤⬛⬛⬛⬛<br>
-                  ⬛⬛⬛⬛⬛⬛🖤🖤🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🟦🟦🖤⬛⬛<br>
-                  ⬛⬛⬛⬛⬛🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🖤⬛⬛⬛<br>
-                  ⬛⬛⬛⬛⬛🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🖤🖤🖤<br>
-                  🟩🟩🟩🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🟩🟩🟩🟩<br>
-                  ⬛⬛⬛⬛🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🟩🖤🟩<br>
-                  🖤⬛⬛🖤⬛⬛⬛⬛⬛⬛🖤🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🟩⬛<br>
-                  🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤<br>
-                  ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🟩<br>
-                  ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤🖤<br>
-                  ⬛⬛⬛⬛⬛⬛⬛🟩🏽🏽🏽🟫🟩🟩🏽🏼🏼🏽🟩⬛⬛⬛⬛⬛⬛⬛⬛🖤<br>
-                  ⬛⬛⬛⬛⬛⬛🖤🏼🏼🏼🏼🏼🏼🏼🏼🏼🏽🟩🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛<br>
-                  ⬛⬛⬛⬛⬛⬛🟩🏽🟩🖤⬛🖤🟩🏼🟩🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛<br>
-                  ⬛⬛⬛⬛⬛⬛🖤🏽🖤⬛⬛⬛🖤🟩🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🖤<br>
-                  🟦⬛⬛⬛⬛⬛🟩🏽🏽🟩🖤🏽🏽⬛⬛⬛🖤🟩🖤⬛⬛⬛⬛⬛⬛⬛⬛🟦<br>
-                  🖤⬛⬛⬛⬛⬛🏽🏼🏻🏼🏼🏼🏽🏽🟩⬛🟩🏽🟩🟩🖤⬛⬛⬛⬛⬛⬛🟦<br>
-                  ⬛⬛⬛⬛⬛⬛🏼🏻🏻🏻🏻🏻🏽🏻🏼⬛🟩🏽🏽🏽🟩⬛⬛⬛⬛⬛⬛🖤<br>
-                  ⬛⬛⬛⬛⬛⬛🏽🏼🏻🏻🏻🏼🏻🏻🏼🖤🖤🏽🏼🟩🖤⬛⬛⬛⬛⬛⬛🟩<br>
-                  ⬛⬛⬛⬛⬛⬛🏼🏼🏼🏽🏽🏼🏻🏻🏽🟩🖤🖤🟩🖤⬛⬛⬛⬛⬛⬛🟩🟩<br>
-                  ⬛⬛⬛⬛⬛⬛🏽🏻🏻🏻🏻🏼🟩🟩⬛⬛⬛🟩🟩🖤⬛⬛⬛⬛⬛⬛🟩🟦<br>
-                  ⬛⬛⬛⬛⬛⬛🟩🏼🏻🏻🏻🏻🏼🏼🟫⬛🖤🟩🟩⬛⬛⬛⬛⬛⬛⬛🟦🟦<br>
-                  ⬛⬛⬛⬛⬛⬛🖤🏼🏼🏻🏻🏻🏼🏻🏼🖤🖤🖤🖤⬛⬛⬛⬛⬛⬛⬛🖤🟦<br>
-                  ⬛⬛⬛⬛⬛⬛⬛🏽🏼🏼🏽🏽🟩🏼🏽⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛<br>
-                  ⬛⬛⬛⬛⬛⬛⬛🟩🏼🏽🏽🏽🏼🏼🟩⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛<br>
-                  🟦🟦🟦⬛⬛⬛⬛⬛🏽🏽🏼🏽🟩🏻🖤⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛🟦🟦<br>
-                </div>
-                <div class="terminal-text">
-<span class="term-green">sudonishant@github</span>
-<span class="term-dim">------------------</span>
-<span class="term-label">OS:</span> Linux (Kali / Ubuntu)
-<span class="term-label">Uptime:</span> 17 years, 8 months, 12 days
-<span class="term-label">Host:</span> Class 12 Developer & Pentester
-<span class="term-label">Kernel:</span> Threat Hunter & Script Writer
-<span class="term-label">IDE:</span> VSCode, Vim, Bash Terminal
-
-<span class="term-label">Languages:</span> Python, Bash, Go, HTML, CSS, JS
-<span class="term-label">Auditing:</span> OWASP, Recon, OSINT
-
-<span class="term-label">Hobbies:</span> Security Tools, CTFs, Gaming
-
-<span class="term-label">GitHub Stats:</span>
-  Repos: 2 (Public)
-  Commits: 30+
-  Status: Build Mode
-
-<span class="term-label">Hardening:</span> [###########.......] 60%
-<span class="term-label">Scripting:</span> [#############.....] 70%
-<span class="term-label">Pentesting:</span> [############......] 65%
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section about-section" id="about">
-      <div class="shell split-layout">
-        <div class="section-copy" data-reveal>
-          <p class="eyebrow">About</p>
-          <h2>Code-first portfolio, not a placeholder profile.</h2>
-          <p>
-            I like projects that move from idea to working build fast. That means clean UI, strong feedback, and something people can actually use or play.
-          </p>
-          <p>
-            Right now the focus is web development, automation, AI-assisted tools, and building game systems directly in the browser.
-          </p>
-        </div>
-
-        <div class="about-panel" data-reveal>
-          <article class="info-card">
-            <span class="info-label">Base</span>
-            <strong>Bihar, India</strong>
-          </article>
-          <article class="info-card">
-            <span class="info-label">Focus</span>
-            <strong>Frontend, Python, AI tools</strong>
-          </article>
-          <article class="info-card">
-            <span class="info-label">Current Build</span>
-            <strong>Premium mini-arcade inside the portfolio</strong>
-          </article>
-          <article class="info-card">
-            <span class="info-label">Style</span>
-            <strong>Readable, fast, interactive, polished</strong>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section projects-section" id="projects">
-      <div class="shell">
-        <div class="section-copy" data-reveal>
-          <p class="eyebrow">Projects</p>
-          <h2>Recent builds</h2>
-        </div>
-
-        <div class="project-grid">
-          <article class="project-card" data-reveal>
-            <div class="project-preview preview-auto"><span>AUTO-YT</span></div>
-            <p class="project-kicker">AI Automation</p>
-            <h3>Auto-YT</h3>
-            <p>Topic generation, content drafting, metadata handling, and publish workflow experiments.</p>
-            <p class="project-stack"><strong>Stack:</strong> React, Express, TypeScript, Gemini API</p>
-            <div class="project-links">
-              <span class="project-note">Private Source</span>
-            </div>
-          </article>
-
-          <article class="project-card" data-reveal>
-            <div class="project-preview preview-jarvis"><span>DESI-JARVIS</span></div>
-            <p class="project-kicker">Python Utility</p>
-            <h3>Desi-Jarvis</h3>
-            <p>Assistant logic, automation testing, and desktop-side Python experiments.</p>
-            <p class="project-stack"><strong>Stack:</strong> Python</p>
-            <div class="project-links">
-              <span class="project-note">Private Source</span>
-            </div>
-          </article>
-
-          <article class="project-card" data-reveal>
-            <div class="project-preview preview-portfolio"><span>PORTFOLIO</span></div>
-            <p class="project-kicker">Live Site</p>
-            <h3>Portfolio Arcade</h3>
-            <p>The current site: projects, support flow, and a full browser-game section under one shell.</p>
-            <p class="project-stack"><strong>Stack:</strong> HTML, CSS, JavaScript</p>
-            <div class="project-links">
-              <a class="button secondary" href="https://github.com/sudonishant/sudonishant.github.io" target="_blank" rel="noreferrer">Repo</a>
-              <a class="button primary" href="https://sudonishant.github.io/" target="_blank" rel="noreferrer">Live</a>
-            </div>
-          </article>
-
-          <article class="project-card" data-reveal>
-            <div class="project-preview preview-spy"><span>DESI-SPY</span></div>
-            <p class="project-kicker">Security Experiment</p>
-            <h3>Desi-Spy</h3>
-            <p>Security-side ideas, testing flows, and a foundation for future tool experiments.</p>
-            <p class="project-stack"><strong>Stack:</strong> Python</p>
-            <div class="project-links">
-              <span class="project-note">Private Source</span>
-            </div>
-          </article>
-
-          <article class="project-card" data-reveal>
-            <div class="project-preview preview-ludo"><span>LUDO BUILD</span></div>
-            <p class="project-kicker">Private Build</p>
-            <h3>nee-ludo-fantasy</h3>
-            <p>An interactive game build being shaped privately before public release.</p>
-            <p class="project-stack"><strong>Status:</strong> Private build</p>
-            <div class="project-links">
-              <span class="project-note">In Progress</span>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section games-section" id="games">
-      <div class="shell">
-        <div class="section-copy games-header" data-reveal>
-          <p class="eyebrow">Games</p>
-          <h2>Playable browser arcade</h2>
-          <p>Pick a game, hit play, and jump straight in.</p>
-        </div>
-
-        <div class="games-showcase-grid">
-          <article class="game-showcase-card" data-reveal>
-            <p class="game-card-kicker">Runner</p>
-            <h3>Bug Catcher Run</h3>
-            <p>Fast digital endless runner with jumps, coffee boosts, focus mode, and neon near-miss combos.</p>
-            <a class="button secondary" href="games/bug-catcher-run.html">Play Now</a>
-          </article>
-
-          <article class="game-showcase-card" data-reveal>
-            <p class="game-card-kicker">Shooter</p>
-            <h3>Patna-1 Space Shooter</h3>
-            <p>Top-down arcade combat with boss fights, power-ups, screen shake, and aggressive wave pacing.</p>
-            <a class="button secondary" href="games/patna-1-space-shooter.html">Play Now</a>
-          </article>
-
-          <article class="game-showcase-card" data-reveal>
-            <p class="game-card-kicker">Mystery</p>
-            <h3>Desi Detective</h3>
-            <p>Top-down investigation run with patrol pressure, clue pickups, suspect reads, and multiple endings.</p>
-            <a class="button secondary" href="games/desi-detective.html">Play Now</a>
-          </article>
-
-          <article class="game-showcase-card accent-card" data-reveal>
-            <p class="game-card-kicker">Launcher</p>
-            <h3>Open the full arcade</h3>
-            <p>Quiz, memory, tower stack, typing, stealth, roast battles, pathfinding, and more.</p>
-            <a class="button primary" href="games.html">Open Games</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section contact-section" id="contact">
-      <div class="shell contact-hub" data-reveal>
-        <h2>Contact</h2>
-        <div class="contact-hub-grid">
-          <div class="contact-column">
-            <p class="contact-column-title">Main</p>
-            <a class="contact-link-button" href="#home">Home</a>
-            <a class="contact-link-button" href="#about">About</a>
-            <a class="contact-link-button" href="#projects">Projects</a>
-          </div>
-          <div class="contact-column">
-            <p class="contact-column-title">Profiles</p>
-            <a class="contact-link-button" href="https://www.linkedin.com/in/nishant-kumar-423870291/" target="_blank" rel="noreferrer">LinkedIn</a>
-            <a class="contact-link-button" href="https://github.com/sudonishant" target="_blank" rel="noreferrer">GitHub</a>
-            <a class="contact-link-button" href="https://sudonishant.github.io/" target="_blank" rel="noreferrer">Portfolio</a>
-          </div>
-          <div class="contact-column">
-            <p class="contact-column-title">Content</p>
-            <a class="contact-link-button" href="games.html">Arcade Hub</a>
-            <a class="contact-link-button" href="blogs.html">Tech Blog</a>
-            <a class="contact-link-button" href="donate.html">Support Me</a>
-          </div>
-          <div class="contact-column">
-            <p class="contact-column-title">Arcade</p>
-            <a class="contact-link-button" href="games.html">Games</a>
-            <a class="contact-link-button" href="games/type-racer-code-lab.html">TypeRacer</a>
-            <a class="contact-link-button" href="games/signal-heist.html">Signal Heist</a>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer compact-footer">
-    <div class="shell footer-quick-links">
-      <a class="button secondary" href="#home">Home</a>
-      <a class="button secondary" href="#projects">Projects</a>
-      <a class="button secondary" href="games.html">Games</a>
-      <a class="button secondary" href="donate.html">Donate</a>
-      <a class="button secondary" href="#contact">Contact</a>
-    </div>
-    <div class="shell footer-bottom">
-      <p id="footer-bottom-line">Built by Nishant Kumar for real projects, fast experiments, and playable web builds.</p>
-    </div>
-  </footer>
+  </div>
 
   <script src="script.js"></script>
 </body>
