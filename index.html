@@ -5,96 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>sudonishant | Security Researcher & Developer</title>
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Neeshant (sudonishant) - Cybersecurity Analyst, Script Writer, and Student Developer. Interactive CRT hacker terminal portfolio.">
-  <meta name="keywords" content="sudonishant, cyber security, ethical hacker, portfolio, CRT terminal, matrix code, retro cli">
+  <meta name="description" content="Neeshant (sudonishant) - Cybersecurity Analyst, Script Writer, and Student Developer. Crisp macOS terminal interface.">
+  <meta name="keywords" content="sudonishant, cyber security, ethical hacker, portfolio, macOS terminal, apple theme, 4k layout">
   <meta name="author" content="sudonishant">
   <meta property="og:title" content="sudonishant | Security Researcher & Developer">
-  <meta property="og:description" content="Interactive hacker terminal portfolio of Neeshant. 18-year-old cybersecurity student.">
+  <meta property="og:description" content="Crisp Apple macOS terminal portfolio of Neeshant. 18-year-old cybersecurity student.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://sudonishant.github.io/">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
   <!-- Stylesheets -->
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
-  <!-- HTML5 Canvas for high performance Matrix Digital Rain -->
+  <!-- Canvas for sharp Matrix digital rain background -->
   <canvas id="matrix-canvas"></canvas>
 
-  <!-- Retro CRT Scanline and Flicker Overlay -->
-  <div class="crt-overlay"></div>
-
-  <!-- Dashboard Shell -->
-  <div class="dashboard-container">
-    <div class="terminal-window">
+  <!-- macOS Desktop Container -->
+  <div class="mac-desktop">
+    
+    <!-- Centered Glassmorphic macOS Terminal -->
+    <div class="mac-terminal">
       
-      <!-- Moving CRT scan line scanner -->
-      <div class="crt-scanline"></div>
-      
-      <!-- macOS-style Window Header -->
-      <div class="terminal-window-header">
-        <div class="window-buttons">
-          <span class="win-btn win-btn-close"></span>
-          <span class="win-btn win-btn-minimize"></span>
-          <span class="win-btn win-btn-maximize"></span>
+      <!-- macOS Terminal Header Bar -->
+      <div class="mac-terminal-header">
+        <div class="window-controls">
+          <span class="ctrl-dot dot-close"></span>
+          <span class="ctrl-dot dot-minimize"></span>
+          <span class="ctrl-dot dot-maximize"></span>
         </div>
-        <div class="window-title">root@sudonishant-exploit: ~</div>
-        <div class="window-status"><span class="status-indicator-dot alert-pulse"></span> INTRUSION_SIMULATION_ACTIVE</div>
+        <div class="window-title">guest@sudonishant: ~ (zsh)</div>
+        <div class="window-actions">
+          <span class="tab-indicator">Shell</span>
+        </div>
       </div>
       
-      <!-- Split-Pane Window Content -->
-      <div class="terminal-window-body">
-        
-        <!-- Left Side Pane (Hacker HUD Console Monitor + Quick Stats) -->
-        <div class="panel-left">
-          <div class="profile-frame">
-            <div class="frame-header">
-              <span class="frame-dot"></span>
-              <span class="frame-title">HUD_CONSOLE_MONITOR.EXE</span>
-            </div>
-            <div class="radar-hud-container">
-              <img src="hacker_console.svg" class="hud-radar-vector" alt="Radar Vector HUD">
-            </div>
-          </div>
+      <!-- macOS Terminal Screen -->
+      <div class="mac-terminal-body">
+        <div class="terminal-container">
+          <div class="welcome-banner">
+============================================================
+  ██████  ██    ██ ██████   ██████  ███    ██ ██   ██ 
+ ██       ██    ██ ██   ██ ██    ██ ████   ██ ██   ██ 
+  ██████  ██    ██ ██   ██ ██    ██ ██ ██  ██ ███████ 
+       ██ ██    ██ ██   ██ ██    ██ ██  ██ ██ ██   ██ 
+  ██████   ██████  ██████   ██████  ██   ████ ██   ██ 
+============================================================
+
+[+] Welcome to Secure Terminal Shell v3.0 (macOS Mode).
+[+] System: sudonishant.github.io | Status: ACTIVE
+[+] Type <span class="term-highlight">'help'</span> to view available security commands.
+</div>
+          <div class="terminal-history" id="terminal-history"></div>
           
-          <div class="system-stats">
-            <div class="stat-row">
-              <span class="stat-label">USER:</span>
-              <span class="stat-value text-green">sudonishant</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">AGE:</span>
-              <span class="stat-value">18 Years</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">ROLE:</span>
-              <span class="stat-value text-cyan">Security Researcher</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">SYSTEM:</span>
-              <span class="stat-value text-green">SECURE</span>
-            </div>
+          <div class="terminal-input-row" id="input-area">
+            <span class="prompt">
+              <span class="prompt-user">guest</span>@<span class="prompt-host">sudonishant</span> <span class="prompt-tilde">~</span> %
+            </span>
+            <input type="text" id="terminal-input" autofocus autocomplete="off" spellcheck="false" placeholder="Type a command...">
           </div>
         </div>
-
-        <!-- Right Side Pane (CLI terminal simulator) -->
-        <div class="panel-right">
-          <div class="cli-screen">
-            <div class="terminal-history" id="terminal-history"></div>
-            
-            <div class="terminal-input-row" style="display: none;" id="input-area">
-              <span class="prompt">
-                <span class="prompt-user">guest</span>@<span class="prompt-host">sudonishant</span>:<span class="prompt-tilde">~</span>$
-              </span>
-              <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" placeholder="Type command...">
-            </div>
-          </div>
-        </div>
-
       </div>
+
     </div>
   </div>
 
