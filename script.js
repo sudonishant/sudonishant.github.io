@@ -141,7 +141,7 @@ const commands = {
       return [
         "[+] <span class='term-cyan'>Identity:</span> Neeshant (alias: sudonishant)",
         "[+] <span class='term-cyan'>Focus:</span> Cyber Security Student & Ethical Hacker",
-        "[+] <span class='term-cyan'>Education:</span> Grade 12 (Bihar, India)",
+        "[+] <span class='term-cyan'>Age:</span>       18 Years (Bihar, India)",
         "[+] <span class='term-cyan'>Profile:</span> Enthusiast focused on learning defensive security,",
         "             script scripting, OWASP core practices, and operating system hardening.",
         "[+] <span class='term-cyan'>Philosophy:</span> \"Identify security gaps to patch them, build secure code.\""

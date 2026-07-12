@@ -230,16 +230,22 @@ body, html {
   letter-spacing: 1px;
 }
 
-/* Emoji Art styling */
-.emoji-art {
-  font-size: 8px;
-  line-height: 1.15;
-  letter-spacing: 0px;
-  text-align: center;
-  padding: 15px 5px;
-  white-space: pre-wrap;
-  user-select: none;
-  font-family: monospace;
+/* HUD Radar vector container styles */
+.radar-hud-container {
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.hud-radar-vector {
+  width: 100%;
+  max-width: 290px;
+  height: auto;
+  border-radius: 4px;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.25));
 }
 
 .system-stats {
@@ -467,9 +473,8 @@ body, html {
     width: 130px;
   }
   
-  .emoji-art {
-    font-size: 3.5px;
-    padding: 5px;
+  .hud-radar-vector {
+    max-width: 120px;
   }
   
   .system-stats {
