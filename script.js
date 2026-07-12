@@ -118,20 +118,21 @@ document.querySelector(".mac-terminal-body").addEventListener("click", () => {
   terminalInput.focus();
 });
 
-// Command definitions
+// Command definitions with custom TUI layouts
 const commands = {
   help: {
     desc: "Show all available security shell commands.",
     action: () => {
       return [
-        "<span class='term-cyan'>Available Commands:</span>",
-        "  <span class='term-green'>help</span>      - Show this manual list.",
-        "  <span class='term-green'>about</span>     - Display information about Neeshant.",
-        "  <span class='term-green'>skills</span>    - List cybersecurity capabilities & audit level.",
-        "  <span class='term-green'>projects</span>  - List educational defensive security tools.",
-        "  <span class='term-green'>contact</span>   - Show secure communication channels.",
-        "  <span class='term-green'>matrix</span>    - Toggle the background Matrix code rain animation.",
-        "  <span class='term-green'>clear</span>     - Clear terminal buffer."
+        "┌──────────────────────── AVAILABLE SHELL COMMANDS ────────────────────────┐",
+        "│  <span class='term-green'>help</span>      - Show this interactive TUI menu guide.                   │",
+        "│  <span class='term-green'>about</span>     - Display background dossier for Nee.                     │",
+        "│  <span class='term-green'>skills</span>    - List technical security capabilities & audit level.     │",
+        "│  <span class='term-green'>projects</span>  - Show defensive security auditing code repositories.     │",
+        "│  <span class='term-green'>contact</span>   - Display secure channels & connection keys.              │",
+        "│  <span class='term-green'>matrix</span>    - Toggle the Matrix background code rain.                 │",
+        "│  <span class='term-green'>clear</span>     - Clear terminal buffer.                                  │",
+        "└──────────────────────────────────────────────────────────────────────────┘"
       ].join("\n");
     }
   },
@@ -139,12 +140,14 @@ const commands = {
     desc: "Display information about Neeshant.",
     action: () => {
       return [
-        "[+] <span class='term-cyan'>Identity:</span> Neeshant (alias: sudonishant)",
-        "[+] <span class='term-cyan'>Focus:</span> Cyber Security Student & Ethical Hacker",
-        "[+] <span class='term-cyan'>Age:</span>       18 Years (Bihar, India)",
-        "[+] <span class='term-cyan'>Profile:</span> Enthusiast focused on learning defensive security,",
-        "             script scripting, OWASP core practices, and operating system hardening.",
-        "[+] <span class='term-cyan'>Philosophy:</span> \"Identify security gaps to patch them, build secure code.\""
+        "┌───────────────────────────────── NEE DOSSIER ─────────────────────────────────┐",
+        "│  [+] <span class='term-cyan'>Identity</span> : Neeshant (alias: sudonishant)                                 │",
+        "│  [+] <span class='term-cyan'>Focus</span>    : Cyber Security Student & Ethical Hacker                       │",
+        "│  [+] <span class='term-cyan'>Age</span>      : 18 Years (Bihar, India)                                       │",
+        "│  [+] <span class='term-cyan'>Profile</span>  : Focused on threat hunting, script automation,                 │",
+        "│                 OWASP core guidelines, and system hardening.                  │",
+        "│  [+] <span class='term-cyan'>Philosophy</span>: \"Identify security gaps to patch them, build safe.\"         │",
+        "└───────────────────────────────────────────────────────────────────────────────┘"
       ].join("\n");
     }
   },
@@ -152,11 +155,12 @@ const commands = {
     desc: "List cybersecurity capabilities.",
     action: () => {
       return [
-        "<span class='term-cyan'>Capabilities Audit:</span>",
-        "  System Hardening: [###########.......] 60%  (Linux / PAM / Firewalls)",
-        "  Python Scripting: [#############.....] 70%  (Security / Scanners / Automation)",
-        "  Web Pentesting:   [############......] 65%  (OWASP Top 10 / Burp / Audit)",
-        "  Network Recon:    [############......] 60%  (Nmap / Wireshark / Protocols)"
+        "┌────────────────────────────── CAPABILITIES AUDIT ─────────────────────────────┐",
+        "│  System Hardening : ████████████░░░░░░ 60%  (PAM / Firewalls / Auth)            │",
+        "│  Python Scripting : ██████████████░░░░ 70%  (Scanners / Scripting)              │",
+        "│  Web Pentesting   : █████████████░░░░░ 65%  (OWASP Top 10 / Auditing)           │",
+        "│  Network Recon    : ████████████░░░░░░ 60%  (Nmap / Wireshark / Protocols)      │",
+        "└───────────────────────────────────────────────────────────────────────────────┘"
       ].join("\n");
     }
   },
@@ -164,13 +168,14 @@ const commands = {
     desc: "List educational security tools.",
     action: () => {
       return [
-        "<span class='term-cyan'>Educational Defensive Tools (In Development/Research Mode):</span>",
-        "  - <span class='term-green'>PyScanner</span>  : A fast multi-threaded port scanner written in Python.",
-        "  - <span class='term-green'>LogShield</span>  : Bash utility for automated log parsing & failed logins detection.",
-        "  - <span class='term-green'>ReconBot</span>   : Script to harvest public details (OSINT) to identify audit targets.",
-        "",
-        "<span class='term-dim'>Note: These tools are created strictly for educational purposes,</span>",
-        "<span class='term-dim'>defensive system auditing, and authorized security research.</span>"
+        "┌─────────────────────────── DEFENSIVE RESEARCH PROJECTS ───────────────────────┐",
+        "│  - <span class='term-green'>PyScanner</span>  : Fast multi-threaded target port scanner script.              │",
+        "│  - <span class='term-green'>LogShield</span>  : Bash log parsing script for intrusion monitoring.             │",
+        "│  - <span class='term-green'>ReconBot</span>   : Script for automated details harvesting (OSINT).              │",
+        "├───────────────────────────────────────────────────────────────────────────────┤",
+        "│  Note: All tools are developed strictly for educational purposes,             │",
+        "│  defensive security audits, and authorized threat research labs.              │",
+        "└───────────────────────────────────────────────────────────────────────────────┘"
       ].join("\n");
     }
   },
@@ -178,11 +183,12 @@ const commands = {
     desc: "Show secure communication channels.",
     action: () => {
       return [
-        "<span class='term-cyan'>Secure Channels:</span>",
-        "  Email:      <span class='term-green'>sudonishant@users.noreply.github.com</span>",
-        "  Discord:    <span class='term-green'>sudonishant</span>",
-        "  LinkedIn:   <span class='term-green'>nishant-kumar-423870291</span>",
-        "  GitHub:     <span class='term-green'>https://github.com/sudonishant</span>"
+        "┌───────────────────────────────── SECURE CHANNELS ─────────────────────────────┐",
+        "│  Email   : <span class='term-green'>sudonishant@users.noreply.github.com</span>                               │",
+        "│  Discord : <span class='term-green'>sudonishant</span>                                                        │",
+        "│  LinkedIn: <span class='term-green'>nishant-kumar-423870291</span>                                            │",
+        "│  GitHub  : <span class='term-green'>https://github.com/sudonishant</span>                                     │",
+        "└───────────────────────────────────────────────────────────────────────────────┘"
       ].join("\n");
     }
   },
@@ -209,10 +215,10 @@ terminalInput.addEventListener("keydown", (event) => {
     
     if (inputVal === "") return;
 
-    // 1. Echo command
+    // 1. Echo command using custom user prompt Nee@nishant
     const commandLine = document.createElement("div");
     commandLine.className = "terminal-command-echo";
-    commandLine.innerHTML = `<span class="prompt"><span class="prompt-user">guest</span>@<span class="prompt-host">sudonishant</span> <span class="prompt-tilde">~</span> %</span> <span class="term-input-echo">${inputVal}</span>`;
+    commandLine.innerHTML = `<span class="prompt"><span class="prompt-user">Nee</span>@<span class="prompt-host">nishant</span> <span class="prompt-tilde">~</span> %</span> <span class="term-input-echo">${inputVal}</span>`;
     terminalHistory.appendChild(commandLine);
 
     // 2. Parse command
