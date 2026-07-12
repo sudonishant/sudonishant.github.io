@@ -1291,4 +1291,82 @@ input {
   }
 }
 
+/* Terminal Mockup Styles */
+.terminal-mockup {
+  background: rgba(6, 16, 29, 0.7);
+  border: 1px solid rgba(118, 236, 255, 0.25);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  backdrop-filter: blur(10px);
+}
+
+.terminal-header {
+  background: rgba(10, 20, 38, 0.9);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid rgba(118, 236, 255, 0.15);
+}
+
+.terminal-btn {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.btn-red { background: #ff5f56; }
+.btn-yellow { background: #ffbd2e; }
+.btn-green { background: #27c93f; }
+
+.terminal-title {
+  color: var(--muted);
+  font-size: 11px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0.8;
+}
+
+.terminal-body {
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.terminal-content-grid {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+@media (max-width: 1100px) {
+  .terminal-content-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+}
+
+.terminal-art {
+  font-size: 8px;
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.terminal-text {
+  color: #fff;
+  white-space: pre;
+  text-align: left;
+}
+
+.term-green { color: #50fa7b; font-weight: bold; }
+.term-dim { color: #6272a4; }
+.term-label { color: #8be9fd; font-weight: bold; }
+
+
 
