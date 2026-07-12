@@ -133,16 +133,16 @@ function getPromptHTML() {
   return `<span class="prompt-user">Nee</span>@<span class="prompt-host">nishant</span> <span class="prompt-tilde">${currentDir}</span> %`;
 }
 
-// Simulated UNIX filesystem (Mutable state)
-let filesystem = {
+// Default filesystem structure (serializable to JSON)
+const defaultFilesystem = {
   "~": {
     "desktop": {
       isDir: true,
+      perms: "drwxr-xr-x",
       files: {
         "welcome_note.txt": "Welcome to my desktop terminal portfolio!\nType 'help' to see the Kali Linux command manual.",
         "portfolio_shortcut.lnk": "URL: https://sudonishant.github.io/\nStatus: Active Online Node",
         "aadhaar.txt": [
-          "<span class='term-error'>[!] WARNING: abbe jada info mat le tu kuch nahi kar pyaga!</span>",
           "┌────────────────────────────────────────────────────────┐",
           "│                 GOVERNMENT OF INDIA                    │",
           "│  Name:   Neeshant Kumar                                │",
@@ -153,7 +153,6 @@ let filesystem = {
           "└────────────────────────────────────────────────────────┘"
         ].join("\n"),
         "passwords.txt": [
-          "<span class='term-error'>[!] WARNING: abbe jada info mat le tu kuch nahi kar pyaga!</span>",
           "┌────────────────────────────────────────────────────────┐",
           "│  Service         │ Username         │ Password         │",
           "├──────────────────┼──────────────────┼──────────────────┤",
@@ -166,6 +165,7 @@ let filesystem = {
     },
     "documents": {
       isDir: true,
+      perms: "drwxr-xr-x",
       files: {
         "dossier.txt": "Identity: Neeshant (alias: sudonishant)\nFocus: Cyber Security Student & Ethical Hacker\nAge: 18 Years (Bihar, India)\nPhilosophy: Identify security gaps to patch them.",
         "skills.audit": "System Hardening: 60%  (PAM / Firewalls)\nPython Scripting: 70%  (Scanners / Automation)\nWeb Pentesting:   65%  (OWASP Top 10)\nNetwork Recon:    60%  (Nmap / Wireshark)",
@@ -176,19 +176,51 @@ let filesystem = {
     },
     "downloads": {
       isDir: true,
+      perms: "drwxr-xr-x",
       files: {
-        "pyscanner.py": "import socket\n# Multi-threaded port scanner\ndef scan(host, port):\n    s = socket.socket()\n    if s.connect_ex((host, port)) == 0:\n        print(f'[+] {port} is OPEN')"
+        "pyscanner.py": "# Multi-threaded port scanner - sudonishant\nimport socket\nimport threading\n\ndef scan_port(host, port):\n    try:\n        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n        s.settimeout(0.5)\n        if s.connect_ex((host, port)) == 0:\n            print(f'[+] Port {port} is OPEN')\n        s.close()\n    except:\n        pass"
       }
     }
   }
 };
 
+// Initialize fileSystem with localStorage state persistence
+let filesystem = {};
+function saveFilesystem() {
+  localStorage.setItem("nee_terminal_fs", JSON.stringify(filesystem));
+}
+
+function loadFilesystem() {
+  const saved = localStorage.getItem("nee_terminal_fs");
+  if (saved) {
+    try {
+      filesystem = JSON.parse(saved);
+    } catch (e) {
+      filesystem = JSON.parse(JSON.stringify(defaultFilesystem));
+    }
+  } else {
+    filesystem = JSON.parse(JSON.stringify(defaultFilesystem));
+  }
+}
+loadFilesystem();
+
 // Helper: Traverse filesystem path to get node
 function getDirectoryNode(pathStr) {
   if (pathStr === "~") return filesystem["~"];
-  if (pathStr === "~/desktop") return filesystem["~"]["desktop"];
-  if (pathStr === "~/documents") return filesystem["~"]["documents"];
-  if (pathStr === "~/downloads") return filesystem["~"]["downloads"];
+  if (pathStr.startsWith("~/")) {
+    const parts = pathStr.split("/");
+    const sub = parts[1].toLowerCase();
+    if (filesystem["~"][sub] && filesystem["~"][sub].isDir) {
+      if (parts.length > 2) {
+        const sub2 = parts[2].toLowerCase();
+        if (filesystem["~"][sub][sub2] && filesystem["~"][sub][sub2].isDir) {
+          return filesystem["~"][sub][sub2];
+        }
+        return null;
+      }
+      return filesystem["~"][sub];
+    }
+  }
   return null;
 }
 
@@ -196,8 +228,10 @@ function getDirectoryNode(pathStr) {
 function checkSensitiveQuery(text) {
   const query = text.toLowerCase();
   
-  // Exclude touch/cat/nano operations on the dummy text files so users can view/create them
-  if (query.includes("aadhaar.txt") || query.includes("passwords.txt")) return false;
+  // If reading confidential bin or private keys
+  if (query.includes("confidential.bin") || query.includes("aadhaar.txt") || query.includes("passwords.txt")) {
+    return true;
+  }
   
   const sensitiveWords = [
     "aadhaar", "aadhar", "sudo", "hack", "flag", "root", "password", 
@@ -208,38 +242,53 @@ function checkSensitiveQuery(text) {
     "useradd", "userdel", "chown", "kill", "killall", "autoremove"
   ];
   
-  if (query.includes("cat confidential.bin")) return true;
   return sensitiveWords.some(word => query.split(" ").includes(word) || query.startsWith(word));
 }
 
-// Command interpreter
+// Command definitions with TUI layouts and Kali Linux commands
 const commands = {
   help: {
-    action: () => [
-      "┌──────────────────────── AVAILABLE KALI SHELL COMMANDS ───────────────────┐",
-      "│  <span class='term-green'>help</span>      - Show this interactive TUI shell guide.                  │",
-      "│  <span class='term-green'>whoami</span>    - Print current user session details.                     │",
-      "│  <span class='term-green'>pwd</span>       - Print name of current/working directory.                │",
-      "│  <span class='term-green'>ls -la</span>    - List directory contents (directories and files).         │",
-      "│  <span class='term-green'>cd [dir]</span>  - Change working directory (~, desktop, documents, down). │",
-      "│  <span class='term-green'>cat [file]</span>- Output content of a specific simulated file.            │",
-      "│  <span class='term-green'>touch/rm</span>  - Create / Delete files.                                  │",
-      "│  <span class='term-green'>mkdir/rmdir</span>- Create / Delete directories.                              │",
-      "│  <span class='term-green'>nano [file]</span>- Open full interactive GNU Nano text editor.              │",
-      "│  <span class='term-green'>htop</span>      - Launch simulated system task manager.                   │",
-      "│  <span class='term-green'>neofetch</span>  - Show system specs next to Kali Linux ASCII logo.        │",
-      "│  <span class='term-green'>uname -a</span>  - Print system information and kernel stats.              │",
-      "│  <span class='term-green'>ping [tgt]</span>- Send ICMP echo requests to target host.                 │",
-      "│  <span class='term-green'>msfconsole</span>- Open interactive Metasploit Framework shell.           │",
-      "│  <span class='term-green'>clear</span>     - Clear terminal buffer.                                  │",
-      "└──────────────────────────────────────────────────────────────────────────┘"
-    ].join("\n")
+    desc: "Show available commands.",
+    action: () => {
+      return [
+        "┌──────────────────────── AVAILABLE KALI SHELL COMMANDS ───────────────────┐",
+        "│  <span class='term-green'>help</span>      - Show this interactive TUI shell guide.                  │",
+        "│  <span class='term-green'>whoami</span>    - Print current user session details.                     │",
+        "│  <span class='term-green'>pwd</span>       - Print name of current/working directory.                │",
+        "│  <span class='term-green'>ls -la</span>    - List directory contents (directories and files).         │",
+        "│  <span class='term-green'>cd [dir]</span>  - Change working directory (~, desktop, documents, down). │",
+        "│  <span class='term-green'>cat [file]</span>- Output content of a specific simulated file.            │",
+        "│  <span class='term-green'>touch/rm</span>  - Create / Delete files.                                  │",
+        "│  <span class='term-green'>mkdir/rmdir</span>- Create / Delete directories.                              │",
+        "│  <span class='term-green'>nano [file]</span>- Open full interactive GNU Nano text editor.              │",
+        "│  <span class='term-green'>htop</span>      - Launch simulated system task manager.                   │",
+        "│  <span class='term-green'>neofetch</span>  - Show system specs next to Kali Linux ASCII logo.        │",
+        "│  <span class='term-green'>uname -a</span>  - Print system information and kernel stats.              │",
+        "│  <span class='term-green'>ping [tgt]</span>- Send ICMP echo requests to target host.                 │",
+        "│  <span class='term-green'>git clone</span> - Clone a simulated repository folder.                    │",
+        "│  <span class='term-green'>msfconsole</span>- Open interactive Metasploit Framework shell.           │",
+        "│  <span class='term-green'>clear</span>     - Clear terminal buffer.                                  │",
+        "└──────────────────────────────────────────────────────────────────────────┘"
+      ].join("\n");
+    }
   },
   whoami: {
-    action: () => "Nee (Security Researcher & Ethical Hacker)"
+    desc: "Print current user details.",
+    action: () => {
+      return [
+        "┌────────────────────────────── SESSION WHOAMI ─────────────────────────────┐",
+        "│  User: Nee (Security Researcher & Ethical Hacker)                         │",
+        "│  Host: nishant (sudonishant.github.io)                                    │",
+        "│  Role: Local Administrator / Auditor                                      │",
+        "└───────────────────────────────────────────────────────────────────────────┘"
+      ].join("\n");
+    }
   },
   pwd: {
-    action: () => currentDir === "~" ? "/home/nee" : `/home/nee/${currentDir.substring(2)}`
+    desc: "Print working directory.",
+    action: () => {
+      return currentDir === "~" ? "/home/nee" : `/home/nee/${currentDir.substring(2)}`;
+    }
   },
   uname: {
     action: () => "Linux nishant-kali 6.5.0-kali3-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.5.6-1kali1 (2026-07-12) x86_64 GNU/Linux"
@@ -482,6 +531,13 @@ function executeCd(args) {
       promptTilde.textContent = currentDir;
       return getCdGuideHTML();
     }
+  } else if (currentDir.startsWith("~/")) {
+    const parentNode = getDirectoryNode(currentDir);
+    if (parentNode && parentNode[cleanTarget] && parentNode[cleanTarget].isDir) {
+      currentDir = `${currentDir}/${cleanTarget}`;
+      promptTilde.textContent = currentDir;
+      return getCdGuideHTML();
+    }
   }
   return `<span class='term-error'>cd: no such file or directory: ${args}</span>`;
 }
@@ -516,26 +572,52 @@ function getCdGuideHTML() {
       "    Type '<span class='term-green'>cat pyscanner.py</span>' to review defensive Python security script code."
     ].join("\n");
   }
+  // If it's a cloned repo
+  if (currentDir.startsWith("~/") && currentDir.split("/").length > 2) {
+    const parts = currentDir.split("/");
+    const repoName = parts[parts.length - 1];
+    const node = getDirectoryNode(currentDir);
+    const filesList = Object.keys(node.files).join(", ");
+    return [
+      `<span class='term-cyan'>[+] Entered Repository Folder: ${repoName}/</span>`,
+      `    Available Files: <span class='term-green'>${filesList}</span>`,
+      "    Type '<span class='term-green'>ls</span>' to view list or '<span class='term-green'>cat README.md</span>' to read files."
+    ].join("\n");
+  }
   return "";
 }
 
 function executeMkdir(name) {
   if (!name) return "<span class='term-error'>mkdir: missing operand</span>";
   const cleanName = name.trim().toLowerCase();
-  if (currentDir !== "~") return "<span class='term-error'>mkdir: Write permissions restricted in sub-directories</span>";
-  if (filesystem["~"][cleanName]) return `<span class='term-error'>mkdir: cannot create directory '${name}': File exists</span>`;
   
-  filesystem["~"][cleanName] = { isDir: true, perms: "drwxr-xr-x", files: {} };
+  if (currentDir === "~") {
+    if (filesystem["~"][cleanName]) return `<span class='term-error'>mkdir: cannot create directory '${name}': File exists</span>`;
+    filesystem["~"][cleanName] = { isDir: true, perms: "drwxr-xr-x", files: {} };
+  } else {
+    const node = getDirectoryNode(currentDir);
+    if (node[cleanName]) return `<span class='term-error'>mkdir: cannot create directory '${name}': File exists</span>`;
+    node[cleanName] = { isDir: true, perms: "drwxr-xr-x", files: {} };
+  }
+  
+  saveFilesystem();
   return `[+] Created directory: ${cleanName}`;
 }
 
 function executeRmdir(name) {
   if (!name) return "<span class='term-error'>rmdir: missing operand</span>";
   const cleanName = name.trim().toLowerCase();
-  if (currentDir !== "~") return "<span class='term-error'>rmdir: Write permissions restricted in sub-directories</span>";
-  if (!filesystem["~"][cleanName]) return `<span class='term-error'>rmdir: failed to remove '${name}': No such file or directory</span>`;
   
-  delete filesystem["~"][cleanName];
+  if (currentDir === "~") {
+    if (!filesystem["~"][cleanName]) return `<span class='term-error'>rmdir: failed to remove '${name}': No such file or directory</span>`;
+    delete filesystem["~"][cleanName];
+  } else {
+    const node = getDirectoryNode(currentDir);
+    if (!node[cleanName]) return `<span class='term-error'>rmdir: failed to remove '${name}': No such file or directory</span>`;
+    delete node[cleanName];
+  }
+  
+  saveFilesystem();
   return `[-] Removed directory: ${cleanName}`;
 }
 
@@ -545,9 +627,10 @@ function executeTouch(name) {
   const node = getDirectoryNode(currentDir);
   
   if (currentDir === "~") {
-    return "<span class='term-error'>touch: Files must be created inside directories (desktop, documents, or downloads)</span>";
+    return "<span class='term-error'>touch: Files must be created inside sub-directories</span>";
   }
   node.files[cleanName] = "[Empty File] Edit using nano editor.";
+  saveFilesystem();
   return `[+] Created empty file: ${cleanName}`;
 }
 
@@ -559,6 +642,7 @@ function executeRm(name) {
   if (currentDir === "~") {
     if (filesystem["~"][cleanName]) {
       delete filesystem["~"][cleanName];
+      saveFilesystem();
       return `[-] Deleted directory: ${cleanName}`;
     }
     return `<span class='term-error'>rm: cannot remove '${name}': No such file or directory</span>`;
@@ -566,6 +650,7 @@ function executeRm(name) {
   
   if (node.files[cleanName]) {
     delete node.files[cleanName];
+    saveFilesystem();
     return `[-] Deleted file: ${cleanName}`;
   }
   return `<span class='term-error'>rm: cannot remove '${name}': No such file or directory</span>`;
@@ -582,8 +667,11 @@ function executeCat(name) {
   
   const fileContent = node.files[name];
   if (fileContent !== undefined) {
-    if (typeof fileContent === "function") {
-      return fileContent();
+    if (name === "confidential.bin" || name === "aadhaar.txt" || name === "passwords.txt") {
+      // In English as requested by user
+      const warnHeader = "<span class='term-error'>[!] ERROR: Don't try to be a smart hacker. Why are you trying to steal my personal data? Access Denied!</span>";
+      if (name === "confidential.bin") return warnHeader;
+      return warnHeader + "<br><br>" + fileContent.replace(/\n/g, "<br>");
     }
     return fileContent.replace(/\n/g, "<br>");
   }
@@ -654,7 +742,7 @@ function openNano(filename) {
   
   const node = getDirectoryNode(currentDir);
   const existingContent = node.files[filename] || "";
-  nanoTextarea.value = typeof existingContent === "function" ? existingContent() : existingContent;
+  nanoTextarea.value = existingContent;
   
   shellContainer.style.display = "none";
   nanoEditor.style.display = "flex";
@@ -674,6 +762,7 @@ function closeNano() {
   const node = getDirectoryNode(currentDir);
   
   node.files[filename] = content;
+  saveFilesystem();
   
   nanoEditor.style.display = "none";
   shellContainer.style.display = "flex";
@@ -771,9 +860,53 @@ function triggerRebootSequence() {
 function executeFallbackKaliCommand(cmd, args) {
   const cleanCmd = cmd.toLowerCase();
   
-  // Git Command simulation
+  // Simulated Git Clone local filesystem download
   if (cleanCmd === "git") {
-    const action = args.split(" ")[0].toLowerCase();
+    const parts = args.trim().split(" ");
+    const action = parts[0].toLowerCase();
+    
+    if (action === "clone") {
+      if (parts.length < 2) return "<span class='term-error'>fatal: You must specify a repository to clone.</span>";
+      const url = parts[1];
+      let repoName = url.substring(url.lastIndexOf("/") + 1).replace(".git", "").trim();
+      if (!repoName) repoName = "cloned-repo";
+      
+      // Clone it into the current directory
+      if (currentDir === "~") {
+        filesystem["~"][repoName] = {
+          isDir: true,
+          perms: "drwxr-xr-x",
+          files: {
+            "README.md": `# ${repoName}\nCloned successfully from: ${url}\nThis repository is active in your persistent browser shell.`,
+            "main.py": `# Autogenerated source file\nprint('Initializing ${repoName} main runtime execution... [OK]')`
+          }
+        };
+      } else {
+        const node = getDirectoryNode(currentDir);
+        node[repoName] = {
+          isDir: true,
+          perms: "drwxr-xr-x",
+          files: {
+            "README.md": `# ${repoName}\nCloned successfully from: ${url}\nThis repository is active in your persistent browser shell.`,
+            "main.py": `# Autogenerated source file\nprint('Initializing ${repoName} main runtime execution... [OK]')`
+          }
+        };
+      }
+      
+      saveFilesystem();
+      
+      return [
+        `Cloning into '${repoName}'...`,
+        "remote: Enumerating objects: 15, done.",
+        "remote: Counting objects: 100% (15/15), done.",
+        "remote: Compressing objects: 100% (10/10), done.",
+        "Receiving objects: 100% (15/15), 4.25 KiB | 4.25 MiB/s, done.",
+        "Resolving deltas: 100% (5/5), done.",
+        `<span class='term-green'>[+] Repository cloned successfully: ${repoName}/</span>`,
+        `Type 'cd ${repoName}' to enter the folder.`
+      ].join("\n");
+    }
+    
     if (action === "status") {
       return "On branch main\nYour branch is up to date with 'origin/main'.\n\nnothing to commit, working tree clean";
     }
@@ -862,9 +995,9 @@ terminalInput.addEventListener("keydown", (event) => {
     const outputDiv = document.createElement("div");
     outputDiv.className = "terminal-output-block";
 
-    // 2. Intercept sensitive commands
+    // 2. Intercept sensitive commands (in English as requested by user)
     if (checkSensitiveQuery(inputVal)) {
-      outputDiv.innerHTML = "<span class='term-error'>[!] ERROR: abbe jada info mat le tu kuch nahi kar pyaga!</span>";
+      outputDiv.innerHTML = "<span class='term-error'>[!] ERROR: Don't try to be a smart hacker. Why are you trying to steal my personal data? Access Denied!</span>";
       terminalHistory.appendChild(outputDiv);
       const container = document.querySelector(".terminal-container");
       container.scrollTop = container.scrollHeight;
