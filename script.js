@@ -1132,6 +1132,21 @@ terminalInput.addEventListener("keydown", (event) => {
           outputDiv.innerHTML = "<span class='term-error'>usage: alias name='command'</span>";
         }
       }
+    } else if (cmd === "music" || cmd === "play") {
+      const bgMusic = document.getElementById("bg-music");
+      const musicToggle = document.getElementById("music-toggle");
+      if (args === "stop" || args === "pause" || args === "mute") {
+        bgMusic.pause();
+        musicToggle.classList.remove("playing");
+        musicToggle.textContent = "🎵 PLAY MUSIC";
+        outputDiv.innerHTML = "[-] Theme music paused.";
+      } else {
+        bgMusic.play().then(() => {
+          musicToggle.classList.add("playing");
+          musicToggle.textContent = "⏸ PAUSE MUSIC";
+        }).catch(e => console.log("Blocked:", e));
+        outputDiv.innerHTML = "[+] Playing hacker theme song... Enjoy the cyber beats! 🎧";
+      }
     } else if (cmd === "exit") {
       outputDiv.innerHTML = "[+] Terminal session closed. Restart by refreshing the browser tab.";
     } else if (commands[cmd]) {
@@ -1153,5 +1168,23 @@ terminalInput.addEventListener("keydown", (event) => {
     // Auto scroll to bottom
     const container = document.querySelector(".terminal-container");
     container.scrollTop = container.scrollHeight;
+  }
+});
+
+// Music Toggle Click Handler
+document.getElementById("music-toggle").addEventListener("click", () => {
+  const bgMusic = document.getElementById("bg-music");
+  const musicToggle = document.getElementById("music-toggle");
+  if (bgMusic.paused) {
+    bgMusic.play().then(() => {
+      musicToggle.classList.add("playing");
+      musicToggle.textContent = "⏸ PAUSE MUSIC";
+    }).catch((err) => {
+      console.log("Audio playback blocked:", err);
+    });
+  } else {
+    bgMusic.pause();
+    musicToggle.classList.remove("playing");
+    musicToggle.textContent = "🎵 PLAY MUSIC";
   }
 });

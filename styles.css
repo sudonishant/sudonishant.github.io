@@ -403,3 +403,43 @@ body, html {
     font-size: 12px;
   }
 }
+
+/* Audio Player Toggle Widget */
+.music-toggle {
+  background: rgba(0, 255, 102, 0.1);
+  border: 1px solid #00ff66;
+  color: #00ff66;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  user-select: none;
+}
+.music-toggle:hover {
+  background: #00ff66;
+  color: #030508;
+  box-shadow: 0 0 8px #00ff66;
+}
+.music-toggle.playing {
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  animation: musicPulse 1.5s infinite alternate;
+}
+.music-toggle.playing:hover {
+  background: #00e5ff;
+  color: #030508;
+  box-shadow: 0 0 8px #00e5ff;
+}
+
+@keyframes musicPulse {
+  from {
+    box-shadow: 0 0 4px rgba(0, 229, 255, 0.4);
+  }
+  to {
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+  }
+}
