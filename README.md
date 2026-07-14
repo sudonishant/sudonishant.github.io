@@ -1,5 +1,11 @@
 # Neeshant Portfolio Arcade
 
+<p align="center">
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsudonishant%2Fsudonishant.github.io" target="_blank">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel"/>
+  </a>
+</p>
+
 An interactive portfolio website that combines a personal developer brand, featured projects, browser games, and a support page in one GitHub Pages experience.
 
 ## Why This Project Exists
@@ -94,4 +100,30 @@ This repository is optimized for GitHub Pages.
 
 ## Author
 
-Built by Neeshant
+Built with 💻 by [sudonishant](https://github.com/sudonishant).
+
+---
+
+## 🤝 Contributing
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## ⭐ Star History
+
+<p align="center">
+  <a href="https://star-history.com/#sudonishant/sudonishant.github.io&amp;Date" target="_blank">
+    <img src="https://api.star-history.com/svg?repos=sudonishant/sudonishant.github.io&amp;type=Date" width="100%" alt="Star History Chart" />
+  </a>
+</p>
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for details.
