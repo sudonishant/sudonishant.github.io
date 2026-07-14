@@ -169,7 +169,7 @@ const defaultFilesystem = {
       files: {
         "dossier.txt": "Identity: Neeshant (alias: sudonishant)\nFocus: Cyber Security Student & Ethical Hacker\nAge: 18 Years (Bihar, India)\nPhilosophy: Identify security gaps to patch them.",
         "skills.audit": "System Hardening: 60%  (PAM / Firewalls)\nPython Scripting: 70%  (Scanners / Automation)\nWeb Pentesting:   65%  (OWASP Top 10)\nNetwork Recon:    60%  (Nmap / Wireshark)",
-        "projects.md": "- AetherSense: 3D WiFi Volumetric Occupancy Radar & Spatial Mapper (https://github.com/sudonishant/aethersense).\n- PyScanner: Multi-threaded port scanner in Python.\n- LogShield: Bash failed login parser utility.\n- ReconBot: OSINT harvesting automation scripts.",
+        "projects.md": "- OmniDetect AI: Full-Stack Media Metadata Forensics & AI Detection Platform (https://github.com/sudonishant/omnidetect-ai).\n- AetherSense: 3D WiFi Volumetric Occupancy Radar & Spatial Mapper (https://github.com/sudonishant/aethersense).\n- PyScanner: Multi-threaded port scanner in Python.\n- LogShield: Bash failed login parser utility.\n- ReconBot: OSINT harvesting automation scripts.",
         "contact.key": "Email: sudonishant@users.noreply.github.com\nDiscord: sudonishant\nLinkedIn: nishant-kumar-423870291",
         "confidential.bin": "[SENSITIVE DATA LAYER] Secure system logs locked."
       }
