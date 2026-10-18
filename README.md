@@ -5,7 +5,7 @@
     <img src="https://vercel.com/button" alt="Deploy with Vercel"/>
   </a>
 </p>
-
+ 
 An interactive portfolio website that combines a personal developer brand, featured projects, browser games, and a support page in one GitHub Pages experience.
 
 ## Why This Project Exists
