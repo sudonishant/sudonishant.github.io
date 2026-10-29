@@ -104,8 +104,15 @@ const promptLabel = document.getElementById("prompt-label");
 const winTitle = document.getElementById("terminal-window-title");
 const tabInd = document.getElementById("terminal-tab-indicator");
 
-// Interactive modes and filesystem state
+// Interactive modes, user identity and filesystem state
+let currentUser = "nee";
+let currentHost = "nishant-kali";
 let currentDir = "~";
+let isRoot = false;
+let isPasswordPrompt = false;
+let pendingSudoCommand = null;
+let activeInterval = null;
+
 let editorMode = null; // "nano", "htop", "msf", "python"
 let htopInterval = null;
 let aliasMap = {};
@@ -117,20 +124,39 @@ window.onload = () => {
 };
 
 document.querySelector(".mac-terminal-body").addEventListener("click", () => {
-  if (!editorMode && activeTab === "portfolio") {
+  if (!editorMode) {
     terminalInput.focus();
   }
 });
 
-// Dynamic prompt formatter
+// Dynamic authentic prompt formatter
 function getPromptHTML() {
+  if (isPasswordPrompt) {
+    return `<span class="term-yellow">[sudo] password for ${currentUser}:</span>`;
+  }
   if (editorMode === "msf") {
     return `<span class="prompt-user">msf6</span> <span class="term-cyan">&gt;</span>`;
   }
   if (editorMode === "python") {
     return `<span class="term-green">&gt;&gt;&gt;</span>`;
   }
-  return `<span class="prompt-user">Nee</span>@<span class="prompt-host">nishant</span> <span class="prompt-tilde">${currentDir}</span> %`;
+  if (isRoot) {
+    return `<span class="prompt-root" style="color:#ff5f56;font-weight:700;">root</span>@<span class="prompt-host" style="color:#00e5ff;">${currentHost}</span>:<span class="prompt-tilde" style="color:#3b82f6;">${currentDir}</span>#`;
+  }
+  return `<span class="prompt-user" style="color:#00ff66;font-weight:600;">${currentUser}</span>@<span class="prompt-host" style="color:#00e5ff;">${currentHost}</span>:<span class="prompt-tilde" style="color:#3b82f6;">${currentDir}</span>$`;
+}
+
+function updatePrompt() {
+  if (promptLabel) {
+    promptLabel.innerHTML = getPromptHTML();
+  }
+  if (winTitle) {
+    if (isRoot) {
+      winTitle.textContent = `root@${currentHost}: ${currentDir} (bash)`;
+    } else {
+      winTitle.textContent = `${currentUser}@${currentHost}: ${currentDir} (zsh)`;
+    }
+  }
 }
 
 // Default filesystem structure (serializable to JSON)
@@ -274,25 +300,15 @@ const commands = {
     }
   },
   whoami: {
-    desc: "Print current user details.",
-    action: () => {
-      return [
-        "┌────────────────────────────── SESSION WHOAMI ─────────────────────────────┐",
-        "│  User: Nee (Security Researcher & Ethical Hacker)                         │",
-        "│  Host: nishant (sudonishant.github.io)                                    │",
-        "│  Role: Local Administrator / Auditor                                      │",
-        "└───────────────────────────────────────────────────────────────────────────┘"
-      ].join("\n");
-    }
+    desc: "Print effective user id.",
+    action: () => isRoot ? "root" : currentUser
   },
   pwd: {
-    desc: "Print working directory.",
-    action: () => {
-      return currentDir === "~" ? "/home/nee" : `/home/nee/${currentDir.substring(2)}`;
-    }
+    desc: "Print current working directory.",
+    action: () => isRoot && currentDir === "~" ? "/root" : (currentDir === "~" ? `/home/${currentUser}` : `/home/${currentUser}/${currentDir.substring(2)}`)
   },
   uname: {
-    action: () => "Linux nishant-kali 6.5.0-kali3-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.5.6-1kali1 (2026-07-12) x86_64 GNU/Linux"
+    action: () => "Linux nishant-kali 6.6.0-kali3-amd64 #1 SMP PREEMPT_DYNAMIC Kali 6.6.9-1kali1 (2026-01-08) x86_64 GNU/Linux"
   },
   hostnamectl: {
     action: () => [
@@ -300,12 +316,12 @@ const commands = {
       "         Icon name: computer-laptop",
       "           Chassis: laptop",
       "  Operating System: Kali GNU/Linux Rolling",
-      "            Kernel: Linux 6.5.0-kali3-amd64",
+      "            Kernel: Linux 6.6.0-kali3-amd64",
       "      Architecture: x86-64"
     ].join("\n")
   },
   uptime: {
-    action: () => "14:42:01 up 17 years, 8 months, 12 days, 3:45, 1 user, load average: 0.12, 0.08, 0.05"
+    action: () => `17:42:01 up 17 days, 8:42, 1 user, load average: 0.18, 0.12, 0.08`
   },
   lscpu: {
     action: () => [
@@ -320,10 +336,12 @@ const commands = {
     action: () => "x86_64"
   },
   hostname: {
-    action: () => "nishant-kali"
+    action: () => currentHost
   },
   id: {
-    action: () => "uid=1001(nee) gid=1001(nee) groups=1001(nee),27(sudo),44(video)"
+    action: () => isRoot 
+      ? "uid=0(root) gid=0(root) groups=0(root)" 
+      : "uid=1000(nee) gid=1000(nee) groups=1000(nee),27(sudo),100(users),1001(docker)"
   },
   date: {
     action: () => new Date().toString()
@@ -464,7 +482,189 @@ const commands = {
     ].join("\n")
   },
   history: {
-    action: () => commandHistory.map((cmd, idx) => `  ${idx + 1}  ${cmd}`).join("\n")
+    desc: "Display shell command history.",
+    action: () => {
+      if (commandHistory.length === 0) return "  1  help";
+      return commandHistory.map((cmd, idx) => `  ${(idx + 1).toString().padStart(4, " ")}  ${cmd}`).join("\n");
+    }
+  },
+  sudo: {
+    desc: "Execute a command as superuser (root).",
+    action: (args) => {
+      if (isRoot) {
+        if (!args || args === "su" || args === "-i") {
+          return "[+] Already running as superuser (root).";
+        }
+        return runSingleCommand(args);
+      }
+      isPasswordPrompt = true;
+      pendingSudoCommand = args || "su";
+      terminalInput.type = "password";
+      updatePrompt();
+      return "";
+    }
+  },
+  su: {
+    desc: "Switch user to root.",
+    action: () => {
+      if (isRoot) return "[+] Already running as root.";
+      isPasswordPrompt = true;
+      pendingSudoCommand = "su";
+      terminalInput.type = "password";
+      updatePrompt();
+      return "";
+    }
+  },
+  echo: {
+    desc: "Write arguments to standard output.",
+    action: (args) => args || ""
+  },
+  nmap: {
+    desc: "Network exploration tool and security / port scanner.",
+    action: (args) => {
+      const target = args ? args.split(" ").filter(a => !a.startsWith("-")).pop() || "192.168.1.1" : "192.168.1.1";
+      return [
+        `Starting Nmap 7.94 ( https://nmap.org ) at ${new Date().toLocaleTimeString()} IST`,
+        `Initiating SYN Stealth Scan against ${target} [1000 ports]`,
+        `Scanning ${target} ... Done.`,
+        `Nmap scan report for ${target}`,
+        `Host is up (0.0019s latency).`,
+        `Not shown: 996 closed tcp ports (reset)`,
+        `PORT     STATE SERVICE    VERSION`,
+        `<span class='term-green'>22/tcp   open  ssh        OpenSSH 9.3p1 Debian 1 (protocol 2.0)</span>`,
+        `<span class='term-green'>80/tcp   open  http       nginx 1.24.0 (Ubuntu)</span>`,
+        `<span class='term-green'>443/tcp  open  ssl/http   nginx 1.24.0 (TLSv1.3)</span>`,
+        `<span class='term-green'>8080/tcp open  http-proxy Apache Tomcat/10.1.15</span>`,
+        `MAC Address: 00:0C:29:43:A8:BC (VMware)`,
+        `Device type: general purpose`,
+        `Running: Linux 6.X`,
+        `OS CPE: cpe:/o:linux:linux_kernel:6`,
+        ``,
+        `Nmap done: 1 IP address (1 host up) scanned in 1.48 seconds`
+      ].join("\n");
+    }
+  },
+  sqlmap: {
+    desc: "Automatic SQL injection and database takeover tool.",
+    action: (args) => {
+      const target = args || "http://target.local/vuln.php?id=1";
+      return [
+        `        ___`,
+        `       __H__`,
+        ` ___ ___[)]_____ ___ ___  {1.7.11#stable}`,
+        `|_ -| . ["]     | .'| . |`,
+        `|___|_  ["]_|_|_|__,|  _|`,
+        `      |_|V...       |_|   https://sqlmap.org`,
+        ``,
+        `[*] starting @ ${new Date().toLocaleTimeString()}`,
+        `[INFO] testing connection to the target URL: ${target}`,
+        `[INFO] testing if the target URL content is stable`,
+        `[INFO] heuristics detected that the target parameter 'id' might be injectable`,
+        `<span class='term-green'>[+] Parameter 'id' is vulnerable:</span>`,
+        `    Type: boolean-based blind`,
+        `    Title: AND boolean-based blind - WHERE or HAVING clause`,
+        `    Payload: id=1 AND 8829=8829`,
+        `    Type: time-based blind`,
+        `    Title: MySQL >= 5.0.12 AND time-based blind`,
+        `    Payload: id=1 AND (SELECT 2819 FROM (SELECT(SLEEP(5)))a)`,
+        `[INFO] the back-end DBMS is MySQL >= 5.0.12`,
+        `[INFO] fetched tables: users, admin_credentials, audit_logs`
+      ].join("\n");
+    }
+  },
+  hydra: {
+    desc: "Fast network logon cracker.",
+    action: (args) => {
+      return [
+        `Hydra v9.5 (c) 2023 by van Hauser / THC & David Maciejak`,
+        `[DATA] max 16 tasks per target, 1 target, 256 login tries (l:16/p:16)`,
+        `[ATTACK] attacking ssh://192.168.1.105:22/`,
+        `[STATUS] 64.00 tries/min, 64 tries in 00:01h, 192 to do...`,
+        `<span class='term-green'>[22][ssh] host: 192.168.1.105   login: admin   password: shadow123</span>`,
+        `[STATUS] attack finished for 192.168.1.105 (1 valid password found)`,
+        `1 of 1 target completed, 1 valid password found`
+      ].join("\n");
+    }
+  },
+  apt: {
+    desc: "Advanced Package Tool (Kali/Debian package manager).",
+    action: (args) => {
+      const sub = (args || "").split(" ")[0].toLowerCase();
+      const pkg = (args || "").split(" ")[1] || "metasploit-framework";
+      if (sub === "update") {
+        return [
+          "Get:1 http://http.kali.org/kali kali-rolling InRelease [41.5 kB]",
+          "Get:2 http://http.kali.org/kali kali-rolling/main amd64 Packages [19.8 MB]",
+          "Get:3 http://http.kali.org/kali kali-rolling/non-free amd64 Packages [214 kB]",
+          "Fetched 20.1 MB in 1s (18.2 MB/s)",
+          "Reading package lists... Done",
+          "Building dependency tree... Done",
+          "Reading state information... Done",
+          "All packages are up to date."
+        ].join("\n");
+      }
+      if (sub === "install") {
+        return [
+          `Reading package lists... Done`,
+          `Building dependency tree... Done`,
+          `The following NEW packages will be installed:`,
+          `  ${pkg}`,
+          `0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.`,
+          `Need to get 2,840 kB of archives.`,
+          `Get:1 http://http.kali.org/kali kali-rolling/main amd64 ${pkg} amd64 [2,840 kB]`,
+          `Fetched 2,840 kB in 1s (3,120 kB/s)`,
+          `Selecting previously unselected package ${pkg}.`,
+          `(Reading database ... 385420 files and directories currently installed.)`,
+          `Preparing to unpack .../${pkg}_amd64.deb ...`,
+          `Unpacking ${pkg} (latest) ...`,
+          `Setting up ${pkg} (latest) ...`,
+          `Processing triggers for man-db (2.11.2-2) ...`,
+          `<span class='term-green'>[+] ${pkg} installed successfully.</span>`
+        ].join("\n");
+      }
+      if (sub === "upgrade") {
+        return "Reading package lists... Done\nBuilding dependency tree... Done\n0 upgraded, 0 newly installed, 0 to remove.";
+      }
+      return `apt: '${sub}' executed successfully.`;
+    }
+  },
+  "apt-get": {
+    action: (args) => commands.apt.action(args)
+  },
+  traceroute: {
+    desc: "Print the route packets trace to network host.",
+    action: (args) => {
+      const tgt = args || "8.8.8.8";
+      return [
+        `traceroute to ${tgt} (${tgt}), 30 hops max, 60 byte packets`,
+        ` 1  _gateway (192.168.1.1)  1.214 ms  1.102 ms  1.085 ms`,
+        ` 2  10.124.0.1 (10.124.0.1)  4.812 ms  4.750 ms  4.680 ms`,
+        ` 3  182.79.140.21 (airtel-gw)  8.120 ms  8.050 ms  7.990 ms`,
+        ` 4  72.14.215.98 (google-peering)  12.340 ms  12.280 ms  12.190 ms`,
+        ` 5  dns.google (${tgt})  13.410 ms  13.350 ms  13.290 ms`
+      ].join("\n");
+    }
+  },
+  boot: {
+    desc: "Display Linux kernel startup dmesg sequence.",
+    action: () => [
+      "[    0.000000] Linux version 6.6.9-kali1 (devel@kali.org) (gcc-13) #1 SMP PREEMPT_DYNAMIC",
+      "[    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-6.6.9-kali1 root=UUID=5a7e... ro quiet splash",
+      "[    0.021045] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'",
+      "[    0.021049] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'",
+      "[    0.140231] ACPI: Core revision 20230628",
+      "[    0.281940] pci 0000:00:00.0: [8086:9a14] type 00 class 0x060000 Host bridge",
+      "[    0.354120] Memory: 32540MB available",
+      "[    0.781200] [ OK ] Started systemd-udevd.service - Rule-based Manager for Device Events.",
+      "[    0.912400] [ OK ] Reached target System Initialization.",
+      "[    1.120500] [ OK ] Started ssh.service - OpenBSD Secure Shell server.",
+      "[    1.340100] [ OK ] Reached target Multi-User System.",
+      "[    1.500000] [ OK ] Reached target Graphical Interface.",
+      "<span class='term-green'>[+] System state: ACTIVE | Runlevel 5 | All security daemons nominal.</span>"
+    ].join("\n")
+  },
+  dmesg: {
+    action: () => commands.boot.action()
   },
   matrix: {
     action: () => {
@@ -472,41 +672,6 @@ const commands = {
       return active 
         ? "[+] Matrix digital rain animation: <span class='term-green'>ENABLED</span>"
         : "[-] Matrix digital rain animation: <span class='term-error'>DISABLED</span>";
-    }
-  },
-  linux: {
-    desc: "Boot real in-browser Linux (WebAssembly) VM with zero server cost.",
-    action: () => {
-      setTimeout(() => {
-        switchTab("linux");
-      }, 500);
-      return [
-        "┌────────────────── IN-BROWSER LINUX (WEBASSEMBLY) ────────────────┐",
-        "│  [+] Booting x86 CPU Virtual Machine via WebAssembly...          │",
-        "│  [+] Core Engine: Debian (CheerpX / WebVM)                       │",
-        "│  [+] Hosting Cost: ₹0.00 (Runs 100% on client browser CPU/RAM)    │",
-        "│  [+] Opening Real Linux Terminal Session...                      │",
-        "└──────────────────────────────────────────────────────────────────┘"
-      ].join("\n");
-    }
-  },
-  vm: {
-    desc: "Alias for linux command.",
-    action: () => commands.linux.action()
-  },
-  webvm: {
-    desc: "Alias for linux command.",
-    action: () => commands.linux.action()
-  },
-  v86: {
-    desc: "Boot v86 Alpine x86 Linux in browser.",
-    action: () => {
-      const btnV86 = document.getElementById("btn-engine-v86");
-      if (btnV86) btnV86.click();
-      setTimeout(() => {
-        switchTab("linux");
-      }, 500);
-      return "[+] Booting v86 (Alpine Linux) WebAssembly VM...";
     }
   },
   reboot: {
@@ -703,11 +868,8 @@ function executeCat(name) {
   
   const fileContent = node.files[name];
   if (fileContent !== undefined) {
-    if (name === "confidential.bin" || name === "aadhaar.txt" || name === "passwords.txt") {
-      // In English as requested by user
-      const warnHeader = "<span class='term-error'>[!] ERROR: Don't try to be a smart hacker. Why are you trying to steal my personal data? Access Denied!</span>";
-      if (name === "confidential.bin") return warnHeader;
-      return warnHeader + "<br><br>" + fileContent.replace(/\n/g, "<br>");
+    if ((name === "confidential.bin" || name === "aadhaar.txt" || name === "passwords.txt") && !isRoot) {
+      return `<span class='term-error'>cat: ${name}: Permission denied</span><br><span style='color:var(--text-muted);'>[!] Protected root asset. Run: 'sudo cat ${name}' or 'sudo su'</span>`;
     }
     return fileContent.replace(/\n/g, "<br>");
   }
@@ -1012,17 +1174,360 @@ function executeFallbackKaliCommand(cmd, args) {
   return null;
 }
 
-// Handle command input
+// ──────────────────────────────────────────
+// REALISTIC LINUX SHELL PIPELINE & RUNTIME
+// ──────────────────────────────────────────
+let historyIndex = 0;
+
+function executeWriteFile(targetName, content, append = false) {
+  const cleanName = targetName.trim();
+  const node = getDirectoryNode(currentDir);
+  if (!node) return "<span class='term-error'>bash: cannot write file: invalid path</span>";
+  if (!node.files) node.files = {};
+  if (append && node.files[cleanName]) {
+    node.files[cleanName] += "\n" + content;
+  } else {
+    node.files[cleanName] = content;
+  }
+  saveFilesystem();
+  return "";
+}
+
+function runPipeFilter(stageCmd, inputData) {
+  const trimmed = stageCmd.trim();
+  const spaceIdx = trimmed.indexOf(" ");
+  let cmd = trimmed.toLowerCase();
+  let args = "";
+  if (spaceIdx !== -1) {
+    cmd = trimmed.substring(0, spaceIdx).toLowerCase();
+    args = trimmed.substring(spaceIdx + 1);
+  }
+
+  const plainText = inputData.replace(/<br>/g, "\n").replace(/<[^>]+>/g, "");
+  const lines = plainText.split("\n");
+
+  if (cmd === "grep") {
+    const pattern = args.replace("-i", "").replace(/'/g, "").replace(/"/g, "").trim().toLowerCase();
+    const filtered = lines.filter(l => l.toLowerCase().includes(pattern));
+    return filtered.join("<br>");
+  }
+  if (cmd === "wc") {
+    return `      ${lines.length} lines`;
+  }
+  if (cmd === "head") {
+    return lines.slice(0, 10).join("<br>");
+  }
+  if (cmd === "tail") {
+    return lines.slice(Math.max(0, lines.length - 10)).join("<br>");
+  }
+  if (cmd === "sort") {
+    return lines.slice().sort().join("<br>");
+  }
+  if (cmd === "uniq") {
+    return [...new Set(lines)].join("<br>");
+  }
+
+  return inputData;
+}
+
+function runSingleCommand(rawCmd) {
+  const trimmed = rawCmd.trim();
+  if (!trimmed) return "";
+
+  const spaceIndex = trimmed.indexOf(" ");
+  let cmd = trimmed.toLowerCase();
+  let args = "";
+  
+  if (spaceIndex !== -1) {
+    cmd = trimmed.substring(0, spaceIndex).toLowerCase();
+    args = trimmed.substring(spaceIndex + 1);
+  }
+
+  if (aliasMap[cmd]) {
+    cmd = aliasMap[cmd];
+  }
+
+  if (cmd === "clear") {
+    terminalHistory.innerHTML = "";
+    return "";
+  }
+  if (cmd === "cd") return executeCd(args);
+  if (cmd === "ls") return executeLs(args);
+  if (cmd === "mkdir") return executeMkdir(args);
+  if (cmd === "rmdir") return executeRmdir(args);
+  if (cmd === "touch") return executeTouch(args);
+  if (cmd === "rm") return executeRm(args);
+  if (cmd === "cat") return executeCat(args);
+  if (cmd === "less") return executeLess(args);
+  if (cmd === "head") return executeHead(args);
+  if (cmd === "tail") return executeTail(args);
+  if (cmd === "wc") return executeWc(args);
+  if (cmd === "grep") return executeGrep(args);
+  if (cmd === "echo") return args;
+  
+  if (cmd === "exit") {
+    if (isRoot) {
+      isRoot = false;
+      updatePrompt();
+      return "[+] Logged out of root session. Switched back to nee.";
+    }
+    return "[+] Terminal session closed. Restart by refreshing the browser tab.";
+  }
+
+  if (cmd === "nano" || cmd === "vim") {
+    openNano(args);
+    return "";
+  }
+  if (cmd === "top" || cmd === "htop") {
+    openHtop();
+    return "";
+  }
+  if (cmd === "msfconsole") {
+    editorMode = "msf";
+    updatePrompt();
+    return [
+      "       =[ metasploit v6.3.50-dev                          ]",
+      "+ -- --=[ 2345 exploits - 1234 auxiliary - 410 post        ]",
+      "+ -- --=[ 900 payloads - 45 encoders - 11 nops            ]",
+      "+ -- --=[ Free Metasploit Pro trial: http://metasploit.com ]",
+      "",
+      "msfconsole ready. Type 'help' for options."
+    ].join("\n");
+  }
+
+  if (cmd === "alias") {
+    if (!args) {
+      return Object.entries(aliasMap).map(([k, v]) => `alias ${k}='${v}'`).join("\n");
+    }
+    const parts = args.split("=");
+    if (parts.length === 2) {
+      aliasMap[parts[0].trim()] = parts[1].replace(/'/g, "").trim();
+      return `[+] Set alias: ${parts[0]} -> ${parts[1]}`;
+    }
+    return "<span class='term-error'>usage: alias name='command'</span>";
+  }
+
+  if (commands[cmd]) {
+    return commands[cmd].action(args);
+  }
+
+  const fallback = executeFallbackKaliCommand(cmd, args);
+  if (fallback !== null) return fallback;
+
+  return `<span class='term-error'>zsh: command not found: ${cmd}. Type 'help' to show commands.</span>`;
+}
+
+function handlePipeline(rawInput) {
+  // 1. Redirection >>
+  if (rawInput.includes(">>")) {
+    const parts = rawInput.split(">>");
+    const cmdPart = parts[0].trim();
+    const filePart = parts[1].trim();
+    if (!filePart) return "<span class='term-error'>bash: syntax error near unexpected token 'newline'</span>";
+    const res = runSingleCommand(cmdPart);
+    const plain = res.replace(/<[^>]+>/g, "");
+    executeWriteFile(filePart, plain, true);
+    return "";
+  }
+
+  // 2. Redirection >
+  if (rawInput.includes(">")) {
+    const parts = rawInput.split(">");
+    const cmdPart = parts[0].trim();
+    const filePart = parts[1].trim();
+    if (!filePart) return "<span class='term-error'>bash: syntax error near unexpected token 'newline'</span>";
+    const res = runSingleCommand(cmdPart);
+    const plain = res.replace(/<[^>]+>/g, "");
+    executeWriteFile(filePart, plain, false);
+    return "";
+  }
+
+  // 3. Pipes |
+  if (rawInput.includes("|")) {
+    const stages = rawInput.split("|").map(s => s.trim());
+    let currentOutput = runSingleCommand(stages[0]);
+    for (let i = 1; i < stages.length; i++) {
+      currentOutput = runPipeFilter(stages[i], currentOutput);
+    }
+    return currentOutput;
+  }
+
+  return runSingleCommand(rawInput);
+}
+
+// ──────────────────────────────────────────
+// TAB AUTO-COMPLETION & CTRL+C
+// ──────────────────────────────────────────
+const commandNamesList = [
+  "help", "whoami", "pwd", "ls", "cd", "cat", "touch", "rm", "mkdir", "rmdir",
+  "nano", "vim", "htop", "top", "neofetch", "uname", "ping", "traceroute",
+  "nmap", "sqlmap", "hydra", "apt", "apt-get", "curl", "wget", "history",
+  "python3", "python", "git", "msfconsole", "clear", "reboot", "boot", "dmesg",
+  "date", "uptime", "free", "df", "ps", "ip", "ifconfig", "netstat", "ss",
+  "sudo", "su", "exit", "echo", "grep", "wc", "head", "tail", "alias", "music"
+];
+
+function handleTabCompletion() {
+  const currentVal = terminalInput.value;
+  if (!currentVal) return;
+
+  const parts = currentVal.split(" ");
+  
+  // Case 1: Completing command name
+  if (parts.length === 1) {
+    const prefix = parts[0].toLowerCase();
+    const matches = commandNamesList.filter(c => c.startsWith(prefix));
+    if (matches.length === 1) {
+      terminalInput.value = matches[0] + " ";
+    } else if (matches.length > 1) {
+      const echoDiv = document.createElement("div");
+      echoDiv.className = "terminal-command-echo";
+      echoDiv.innerHTML = `${getPromptHTML()} <span class="term-input-echo">${currentVal}</span>`;
+      terminalHistory.appendChild(echoDiv);
+
+      const listDiv = document.createElement("div");
+      listDiv.className = "terminal-output-block";
+      listDiv.innerHTML = matches.map(m => `<span class='term-green'>${m}</span>`).join("    ");
+      terminalHistory.appendChild(listDiv);
+
+      const container = document.querySelector(".terminal-container");
+      container.scrollTop = container.scrollHeight;
+    }
+    return;
+  }
+
+  // Case 2: Completing file or directory argument
+  const lastPart = parts[parts.length - 1];
+  const node = getDirectoryNode(currentDir);
+  let availableItems = [];
+
+  if (currentDir === "~") {
+    availableItems = Object.keys(filesystem["~"]);
+  } else if (node && node.files) {
+    availableItems = Object.keys(node.files);
+  }
+
+  const matches = availableItems.filter(item => item.toLowerCase().startsWith(lastPart.toLowerCase()));
+  if (matches.length === 1) {
+    parts[parts.length - 1] = matches[0];
+    terminalInput.value = parts.join(" ") + " ";
+  } else if (matches.length > 1) {
+    const echoDiv = document.createElement("div");
+    echoDiv.className = "terminal-command-echo";
+    echoDiv.innerHTML = `${getPromptHTML()} <span class="term-input-echo">${currentVal}</span>`;
+    terminalHistory.appendChild(echoDiv);
+
+    const listDiv = document.createElement("div");
+    listDiv.className = "terminal-output-block";
+    listDiv.innerHTML = matches.map(m => `<span class='term-cyan'>${m}</span>`).join("    ");
+    terminalHistory.appendChild(listDiv);
+
+    const container = document.querySelector(".terminal-container");
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+function handleCtrlC() {
+  if (activeInterval) {
+    clearInterval(activeInterval);
+    activeInterval = null;
+  }
+  const echo = document.createElement("div");
+  echo.className = "terminal-command-echo";
+  echo.innerHTML = `${getPromptHTML()} <span class="term-input-echo">${terminalInput.value}^C</span>`;
+  terminalHistory.appendChild(echo);
+  terminalInput.value = "";
+  isPasswordPrompt = false;
+  pendingSudoCommand = null;
+  terminalInput.type = "text";
+  updatePrompt();
+  const container = document.querySelector(".terminal-container");
+  container.scrollTop = container.scrollHeight;
+}
+
+// ──────────────────────────────────────────
+// TERMINAL INPUT EVENT LISTENER
+// ──────────────────────────────────────────
 terminalInput.addEventListener("keydown", (event) => {
+  if (event.key === "Tab") {
+    event.preventDefault();
+    handleTabCompletion();
+    return;
+  }
+
+  if (event.ctrlKey && event.key === "c") {
+    event.preventDefault();
+    handleCtrlC();
+    return;
+  }
+
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    if (commandHistory.length > 0 && historyIndex > 0) {
+      historyIndex--;
+      terminalInput.value = commandHistory[historyIndex];
+    }
+    return;
+  }
+
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+      historyIndex++;
+      terminalInput.value = commandHistory[historyIndex];
+    } else {
+      historyIndex = commandHistory.length;
+      terminalInput.value = "";
+    }
+    return;
+  }
+
   if (event.key === "Enter") {
     const inputVal = terminalInput.value.trim();
     terminalInput.value = "";
-    
-    if (inputVal === "") return;
-    
-    commandHistory.push(inputVal);
 
-    // 1. Echo command using custom user prompt
+    // 1. Password prompt mode
+    if (isPasswordPrompt) {
+      terminalInput.type = "text";
+      isPasswordPrompt = false;
+      const cmdToRun = pendingSudoCommand;
+      pendingSudoCommand = null;
+
+      const echoLine = document.createElement("div");
+      echoLine.className = "terminal-command-echo";
+      echoLine.innerHTML = `<span class="term-yellow">[sudo] password for ${currentUser}:</span>`;
+      terminalHistory.appendChild(echoLine);
+
+      const outDiv = document.createElement("div");
+      outDiv.className = "terminal-output-block";
+
+      if (cmdToRun === "su" || cmdToRun === "sudo su" || cmdToRun === "-i") {
+        isRoot = true;
+        updatePrompt();
+        outDiv.innerHTML = "<span class='term-green'>[+] Authenticated. Switched to superuser (root).</span>";
+      } else {
+        isRoot = true;
+        outDiv.innerHTML = handlePipeline(cmdToRun);
+        if (!cmdToRun.startsWith("su")) {
+          isRoot = false;
+        }
+        updatePrompt();
+      }
+
+      if (outDiv.innerHTML !== "") {
+        terminalHistory.appendChild(outDiv);
+      }
+      const container = document.querySelector(".terminal-container");
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
+
+    if (inputVal === "") return;
+
+    commandHistory.push(inputVal);
+    historyIndex = commandHistory.length;
+
+    // 2. Echo command using authentic prompt
     const commandLine = document.createElement("div");
     commandLine.className = "terminal-command-echo";
     commandLine.innerHTML = `${getPromptHTML()} <span class="term-input-echo">${inputVal}</span>`;
@@ -1031,24 +1536,13 @@ terminalInput.addEventListener("keydown", (event) => {
     const outputDiv = document.createElement("div");
     outputDiv.className = "terminal-output-block";
 
-    // 2. Intercept sensitive commands (in English as requested by user)
-    if (checkSensitiveQuery(inputVal)) {
-      outputDiv.innerHTML = "<span class='term-error'>[!] ERROR: Don't try to be a smart hacker. Why are you trying to steal my personal data? Access Denied!</span>";
-      terminalHistory.appendChild(outputDiv);
-      const container = document.querySelector(".terminal-container");
-      container.scrollTop = container.scrollHeight;
-      return;
-    }
-
     // 3. Handle Python REPL state
     if (editorMode === "python") {
       if (inputVal === "exit()" || inputVal === "quit()") {
         editorMode = null;
-        winTitle.textContent = "Nee@nishant-terminal: ~ (zsh)";
-        tabInd.textContent = "TUI Session";
+        updatePrompt();
         outputDiv.innerHTML = "[+] Closed Python REPL console.";
       } else {
-        // Safe math evaluator for calculator
         const mathRegex = /^[0-9+\-*/().\s]+$/;
         if (mathRegex.test(inputVal)) {
           try {
@@ -1058,7 +1552,7 @@ terminalInput.addEventListener("keydown", (event) => {
             outputDiv.innerHTML = "  SyntaxError: invalid syntax";
           }
         } else {
-          outputDiv.innerHTML = "  NameError: name is not defined (Python REPL restricted to arithmetic evaluations)";
+          outputDiv.innerHTML = `  NameError: name '${inputVal}' is not defined`;
         }
       }
       terminalHistory.appendChild(outputDiv);
@@ -1073,8 +1567,7 @@ terminalInput.addEventListener("keydown", (event) => {
       const sub = parts[0].toLowerCase();
       if (sub === "exit") {
         editorMode = null;
-        winTitle.textContent = "Nee@nishant-terminal: ~ (zsh)";
-        tabInd.textContent = "TUI Session";
+        updatePrompt();
         outputDiv.innerHTML = "[+] Metasploit console shut down.";
       } else if (sub === "help") {
         outputDiv.innerHTML = "Metasploit Core Commands:\n  search [name] - Search for exploit modules.\n  use [exploit] - Select exploit module.\n  exploit       - Execute exploit payload.\n  exit          - Close Metasploit console.";
@@ -1093,257 +1586,54 @@ terminalInput.addEventListener("keydown", (event) => {
       return;
     }
 
-    // 5. Parse command arguments
-    const spaceIndex = inputVal.indexOf(" ");
-    let cmd = inputVal.toLowerCase();
-    let args = "";
-    
-    if (spaceIndex !== -1) {
-      cmd = inputVal.substring(0, spaceIndex).toLowerCase();
-      args = inputVal.substring(spaceIndex + 1);
-    }
-
-    if (aliasMap[cmd]) {
-      cmd = aliasMap[cmd];
-    }
-
-    // Global Command router
-    if (cmd === "clear") {
-      terminalHistory.innerHTML = "";
-      return;
-    } else if (cmd === "cd") {
-      outputDiv.innerHTML = executeCd(args);
-    } else if (cmd === "ls") {
-      outputDiv.innerHTML = executeLs(args);
-    } else if (cmd === "mkdir") {
-      outputDiv.innerHTML = executeMkdir(args);
-    } else if (cmd === "rmdir") {
-      outputDiv.innerHTML = executeRmdir(args);
-    } else if (cmd === "touch") {
-      outputDiv.innerHTML = executeTouch(args);
-    } else if (cmd === "rm") {
-      outputDiv.innerHTML = executeRm(args);
-    } else if (cmd === "cat") {
-      outputDiv.innerHTML = executeCat(args);
-    } else if (cmd === "less") {
-      outputDiv.innerHTML = executeLess(args);
-    } else if (cmd === "head") {
-      outputDiv.innerHTML = executeHead(args);
-    } else if (cmd === "tail") {
-      outputDiv.innerHTML = executeTail(args);
-    } else if (cmd === "wc") {
-      outputDiv.innerHTML = executeWc(args);
-    } else if (cmd === "grep") {
-      outputDiv.innerHTML = executeGrep(args);
-    } else if (cmd === "nano") {
-      openNano(args);
-      return;
-    } else if (cmd === "vim") {
-      openNano(args);
-      return;
-    } else if (cmd === "top" || cmd === "htop") {
-      openHtop();
-      return;
-    } else if (cmd === "msfconsole") {
-      editorMode = "msf";
-      winTitle.textContent = "Nee@nishant-msfconsole: msfconsole";
-      tabInd.textContent = "Metasploit";
-      outputDiv.innerHTML = [
-        "       =[ metasploit v6.3.50-dev                          ]",
-        "+ -- --=[ 2345 exploits - 1234 auxiliary - 410 post        ]",
-        "+ -- --=[ 900 payloads - 45 encoders - 11 nops            ]",
-        "+ -- --=[ Free Metasploit Pro trial: http://metasploit.com ]",
-        "",
-        "msfconsole ready. Type 'help' for options."
-      ].join("\n");
-    } else if (cmd === "alias") {
-      if (!args) {
-        outputDiv.innerHTML = Object.entries(aliasMap).map(([k, v]) => `alias ${k}='${v}'`).join("\n");
-      } else {
-        const parts = args.split("=");
-        if (parts.length === 2) {
-          aliasMap[parts[0].trim()] = parts[1].replace(/'/g, "").trim();
-          outputDiv.innerHTML = `[+] Set alias: ${parts[0]} -> ${parts[1]}`;
+    // 5. Intercept sudo / su command
+    if (inputVal.startsWith("sudo ") || inputVal === "sudo" || inputVal === "su") {
+      if (isRoot) {
+        const subCmd = inputVal.replace(/^sudo\s*/, "");
+        if (!subCmd || subCmd === "su") {
+          outputDiv.innerHTML = "[+] Already root.";
         } else {
-          outputDiv.innerHTML = "<span class='term-error'>usage: alias name='command'</span>";
+          outputDiv.innerHTML = handlePipeline(subCmd);
         }
-      }
-    } else if (cmd === "music" || cmd === "play") {
-      const bgMusic = document.getElementById("bg-music");
-      const musicToggle = document.getElementById("music-toggle");
-      if (args === "stop" || args === "pause" || args === "mute") {
-        bgMusic.pause();
-        musicToggle.classList.remove("playing");
-        musicToggle.textContent = "🎵 PLAY MUSIC";
-        outputDiv.innerHTML = "[-] Theme music paused.";
       } else {
-        bgMusic.play().then(() => {
-          musicToggle.classList.add("playing");
-          musicToggle.textContent = "⏸ PAUSE MUSIC";
-        }).catch(e => console.log("Blocked:", e));
-        outputDiv.innerHTML = "[+] Playing hacker theme song... Enjoy the cyber beats! 🎧";
+        isPasswordPrompt = true;
+        pendingSudoCommand = inputVal.replace(/^sudo\s*/, "") || "su";
+        terminalInput.type = "password";
+        updatePrompt();
+        return;
       }
-    } else if (cmd === "exit") {
-      outputDiv.innerHTML = "[+] Terminal session closed. Restart by refreshing the browser tab.";
-    } else if (commands[cmd]) {
-      outputDiv.innerHTML = commands[cmd].action(args);
     } else {
-      // Check standard 1000+ commands fallback simulation
-      const fallbackOutput = executeFallbackKaliCommand(cmd, args);
-      if (fallbackOutput !== null) {
-        outputDiv.innerHTML = fallbackOutput.replace(/\n/g, "<br>");
-      } else {
-        outputDiv.innerHTML = `<span class='term-error'>zsh: command not found: ${inputVal}. Type 'help' to show commands.</span>`;
-      }
+      // Execute through pipeline handler (handles pipes and redirection)
+      outputDiv.innerHTML = handlePipeline(inputVal);
     }
 
     if (outputDiv.innerHTML !== "") {
       terminalHistory.appendChild(outputDiv);
     }
-    
-    // Auto scroll to bottom
+
     const container = document.querySelector(".terminal-container");
     container.scrollTop = container.scrollHeight;
   }
 });
 
 // Music Toggle Click Handler
-document.getElementById("music-toggle").addEventListener("click", () => {
-  const bgMusic = document.getElementById("bg-music");
-  const musicToggle = document.getElementById("music-toggle");
-  if (bgMusic.paused) {
-    bgMusic.play().then(() => {
-      musicToggle.classList.add("playing");
-      musicToggle.textContent = "⏸ PAUSE MUSIC";
-    }).catch((err) => {
-      console.log("Audio playback blocked:", err);
-    });
-  } else {
-    bgMusic.pause();
-    musicToggle.classList.remove("playing");
-    musicToggle.textContent = "🎵 PLAY MUSIC";
-  }
-});
-
-// ==========================================
-// 3. IN-BROWSER REAL LINUX (WEBASSEMBLY) CONTROLLER
-// ==========================================
-let activeTab = "portfolio";
-let currentLinuxSrc = "https://webvm.io/";
-
-function switchTab(tabName) {
-  const tabPortfolio = document.getElementById("tab-portfolio");
-  const tabLinux = document.getElementById("tab-linux");
-  const shellContainer = document.getElementById("shell-container");
-  const linuxContainer = document.getElementById("linux-container");
-  const terminalBody = document.querySelector(".mac-terminal-body");
-  const tabIndicator = document.getElementById("terminal-tab-indicator");
-  const linuxIframe = document.getElementById("linux-iframe");
-
-  if (tabName === "linux") {
-    activeTab = "linux";
-    if (tabPortfolio) tabPortfolio.classList.remove("active");
-    if (tabLinux) tabLinux.classList.add("active");
-    if (shellContainer) shellContainer.style.display = "none";
-
-    // Close any simulated editors/monitors
-    const nano = document.getElementById("nano-editor");
-    const htop = document.getElementById("htop-monitor");
-    if (nano) nano.style.display = "none";
-    if (htop) htop.style.display = "none";
-
-    if (linuxContainer) linuxContainer.style.display = "flex";
-    if (terminalBody) terminalBody.classList.add("linux-active");
-    if (tabIndicator) tabIndicator.textContent = "Debian (WASM)";
-    if (winTitle) winTitle.textContent = "root@webvm-debian: ~ (bash)";
-    document.title = "root@webvm-debian: ~ (bash)";
-
-    // Lazy load the Linux WebAssembly VM iframe on first access
-    if (!linuxIframe.src || linuxIframe.src === "about:blank" || linuxIframe.src === window.location.href) {
-      loadLinuxEngine(currentLinuxSrc);
+const musicToggleBtn = document.getElementById("music-toggle");
+if (musicToggleBtn) {
+  musicToggleBtn.addEventListener("click", () => {
+    const bgMusic = document.getElementById("bg-music");
+    if (!bgMusic) return;
+    if (bgMusic.paused) {
+      bgMusic.play().then(() => {
+        musicToggleBtn.classList.add("playing");
+        musicToggleBtn.textContent = "⏸ PAUSE MUSIC";
+      }).catch((err) => {
+        console.log("Audio playback blocked:", err);
+      });
+    } else {
+      bgMusic.pause();
+      musicToggleBtn.classList.remove("playing");
+      musicToggleBtn.textContent = "🎵 PLAY MUSIC";
     }
-  } else {
-    activeTab = "portfolio";
-    if (tabLinux) tabLinux.classList.remove("active");
-    if (tabPortfolio) tabPortfolio.classList.add("active");
-    if (linuxContainer) linuxContainer.style.display = "none";
-    if (shellContainer) shellContainer.style.display = "flex";
-    if (terminalBody) terminalBody.classList.remove("linux-active");
-    if (tabIndicator) tabIndicator.textContent = "TUI Session";
-    if (winTitle) winTitle.textContent = "Nee@nishant-terminal: ~ (zsh)";
-    document.title = "sudonishant | Security Researcher & Developer";
-    terminalInput.focus();
-  }
-}
-
-function loadLinuxEngine(url) {
-  const linuxIframe = document.getElementById("linux-iframe");
-  const linuxLoading = document.getElementById("linux-loading");
-  currentLinuxSrc = url;
-
-  if (linuxLoading) {
-    linuxLoading.style.display = "flex";
-    linuxLoading.style.opacity = "1";
-  }
-
-  linuxIframe.onload = () => {
-    setTimeout(() => {
-      if (linuxLoading) {
-        linuxLoading.style.opacity = "0";
-        setTimeout(() => {
-          linuxLoading.style.display = "none";
-        }, 300);
-      }
-    }, 1200);
-  };
-
-  linuxIframe.src = url;
-}
-
-// Tab navigation listeners
-const tabPortfolioBtn = document.getElementById("tab-portfolio");
-const tabLinuxBtn = document.getElementById("tab-linux");
-
-if (tabPortfolioBtn) {
-  tabPortfolioBtn.addEventListener("click", () => switchTab("portfolio"));
-}
-if (tabLinuxBtn) {
-  tabLinuxBtn.addEventListener("click", () => switchTab("linux"));
-}
-
-// In-Browser Linux Engine Switchers
-const btnEngineWebvm = document.getElementById("btn-engine-webvm");
-const btnEngineV86 = document.getElementById("btn-engine-v86");
-const btnReloadVm = document.getElementById("btn-reload-vm");
-const btnBackPortfolio = document.getElementById("btn-back-portfolio");
-
-if (btnEngineWebvm) {
-  btnEngineWebvm.addEventListener("click", () => {
-    btnEngineWebvm.classList.add("active");
-    if (btnEngineV86) btnEngineV86.classList.remove("active");
-    loadLinuxEngine("https://webvm.io/");
-    if (tabInd) tabInd.textContent = "Debian (WASM)";
-  });
-}
-
-if (btnEngineV86) {
-  btnEngineV86.addEventListener("click", () => {
-    btnEngineV86.classList.add("active");
-    if (btnEngineWebvm) btnEngineWebvm.classList.remove("active");
-    loadLinuxEngine("https://copy.sh/v86/?profile=linux");
-    if (tabInd) tabInd.textContent = "Alpine x86 (v86)";
-  });
-}
-
-if (btnReloadVm) {
-  btnReloadVm.addEventListener("click", () => {
-    loadLinuxEngine(currentLinuxSrc);
-  });
-}
-
-if (btnBackPortfolio) {
-  btnBackPortfolio.addEventListener("click", () => {
-    switchTab("portfolio");
   });
 }
 
@@ -1355,22 +1645,19 @@ const macTerminalEl = document.querySelector(".mac-terminal");
 
 if (btnMaximize) {
   btnMaximize.addEventListener("click", () => {
-    macTerminalEl.classList.toggle("maximized");
+    if (macTerminalEl) macTerminalEl.classList.toggle("maximized");
   });
 }
 
 if (btnClose) {
   btnClose.addEventListener("click", () => {
-    if (activeTab === "linux") {
-      switchTab("portfolio");
-    } else {
-      terminalHistory.innerHTML = "";
-    }
+    terminalHistory.innerHTML = "";
   });
 }
 
 if (btnMinimize) {
   btnMinimize.addEventListener("click", () => {
+    if (!macTerminalEl) return;
     macTerminalEl.style.transition = "transform 0.2s ease, opacity 0.2s ease";
     macTerminalEl.style.transform = "scale(0.96)";
     macTerminalEl.style.opacity = "0.7";
@@ -1380,4 +1667,7 @@ if (btnMinimize) {
     }, 200);
   });
 }
+
+// Initialize prompt display
+updatePrompt();
 

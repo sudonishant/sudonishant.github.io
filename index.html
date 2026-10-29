@@ -33,21 +33,14 @@
       <!-- macOS Terminal Header Bar -->
       <div class="mac-terminal-header">
         <div class="window-controls">
-          <span class="ctrl-dot dot-close" title="Reset / Clear Terminal" id="btn-close"></span>
-          <span class="ctrl-dot dot-minimize" title="Minimize / Focus" id="btn-minimize"></span>
-          <span class="ctrl-dot dot-maximize" title="Toggle Fullscreen Window" id="btn-maximize"></span>
+          <span class="ctrl-dot dot-close" title="Clear / Reset Buffer" id="btn-close"></span>
+          <span class="ctrl-dot dot-minimize" title="Minimize / Pulse" id="btn-minimize"></span>
+          <span class="ctrl-dot dot-maximize" title="Toggle Fullscreen 4K Terminal" id="btn-maximize"></span>
         </div>
-        <div class="header-tabs">
-          <button class="header-tab active" id="tab-portfolio" data-mode="portfolio">
-            <span class="tab-icon">💻</span> Portfolio TUI
-          </button>
-          <button class="header-tab" id="tab-linux" data-mode="linux">
-            <span class="tab-icon">🐧</span> Real Linux (WASM)
-          </button>
-        </div>
+        <div class="window-title" id="terminal-window-title">nee@nishant-kali: ~ (zsh)</div>
         <div class="window-actions">
           <span class="music-toggle" id="music-toggle">🎵 PLAY MUSIC</span>
-          <span class="tab-indicator" id="terminal-tab-indicator">TUI Session</span>
+          <span class="tab-indicator" id="terminal-tab-indicator">● Kali GNU/Linux</span>
         </div>
       </div>
       
@@ -73,9 +66,9 @@
           
           <div class="terminal-input-row" id="input-area">
             <span class="prompt" id="prompt-label">
-              <span class="prompt-user">Nee</span>@<span class="prompt-host">nishant</span> <span class="prompt-tilde">~</span> %
+              <span class="prompt-user">nee</span>@<span class="prompt-host">nishant-kali</span>:<span class="prompt-tilde">~</span>$
             </span>
-            <input type="text" id="terminal-input" autofocus autocomplete="off" spellcheck="false" placeholder="Type a command...">
+            <input type="text" id="terminal-input" autofocus autocomplete="off" spellcheck="false" placeholder="">
           </div>
         </div>
 
@@ -108,30 +101,6 @@
             <div>     1 root       20   0 20.1M 4120K 2040K S   0.0  0.0  0:02.14 /sbin/init</div>
           </div>
           <div class="htop-footer">F1Help  F2Setup F3SearchF4FilterF5Tree  F6Sort  F7Nice- F8Nice+ F9Kill  F10Quit(q)</div>
-        </div>
-
-        <!-- In-Browser Real Linux (WebAssembly) Container -->
-        <div id="linux-container" style="display: none;">
-          <div class="linux-topbar">
-            <div class="linux-engine-selector">
-              <span class="linux-label">Distro / WASM Engine:</span>
-              <button class="engine-btn active" id="btn-engine-webvm" data-src="https://webvm.io/">Debian (WebVM)</button>
-              <button class="engine-btn" id="btn-engine-v86" data-src="https://copy.sh/v86/?profile=linux">Alpine/x86 (v86)</button>
-            </div>
-            <div class="linux-actions">
-              <span class="linux-cost-tag">₹0 Zero Server Cost</span>
-              <button class="linux-btn" id="btn-reload-vm" title="Reboot Virtual Machine">🔄 Reboot</button>
-              <button class="linux-btn" id="btn-back-portfolio">⬅ Back to Portfolio</button>
-            </div>
-          </div>
-          <div class="linux-iframe-wrapper">
-            <div class="linux-loading-indicator" id="linux-loading">
-              <div class="spinner"></div>
-              <span>Booting In-Browser Linux (WebAssembly)...</span>
-              <span class="linux-loading-sub">Running directly on client CPU/RAM via Wasm. No server cost.</span>
-            </div>
-            <iframe id="linux-iframe" src="" allow="clipboard-read; clipboard-write; fullscreen;" title="In-Browser Real Linux Terminal"></iframe>
-          </div>
         </div>
 
       </div>
