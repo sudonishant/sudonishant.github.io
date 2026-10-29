@@ -117,7 +117,7 @@ window.onload = () => {
 };
 
 document.querySelector(".mac-terminal-body").addEventListener("click", () => {
-  if (!editorMode) {
+  if (!editorMode && activeTab === "portfolio") {
     terminalInput.focus();
   }
 });
@@ -253,6 +253,7 @@ const commands = {
       return [
         "┌──────────────────────── AVAILABLE KALI SHELL COMMANDS ───────────────────┐",
         "│  <span class='term-green'>help</span>      - Show this interactive TUI shell guide.                  │",
+        "│  <span class='term-green'>linux</span>     - Boot Real Linux (WebAssembly) in browser (₹0 Cost).     │",
         "│  <span class='term-green'>whoami</span>    - Print current user session details.                     │",
         "│  <span class='term-green'>pwd</span>       - Print name of current/working directory.                │",
         "│  <span class='term-green'>ls -la</span>    - List directory contents (directories and files).         │",
@@ -471,6 +472,41 @@ const commands = {
       return active 
         ? "[+] Matrix digital rain animation: <span class='term-green'>ENABLED</span>"
         : "[-] Matrix digital rain animation: <span class='term-error'>DISABLED</span>";
+    }
+  },
+  linux: {
+    desc: "Boot real in-browser Linux (WebAssembly) VM with zero server cost.",
+    action: () => {
+      setTimeout(() => {
+        switchTab("linux");
+      }, 500);
+      return [
+        "┌────────────────── IN-BROWSER LINUX (WEBASSEMBLY) ────────────────┐",
+        "│  [+] Booting x86 CPU Virtual Machine via WebAssembly...          │",
+        "│  [+] Core Engine: Debian (CheerpX / WebVM)                       │",
+        "│  [+] Hosting Cost: ₹0.00 (Runs 100% on client browser CPU/RAM)    │",
+        "│  [+] Opening Real Linux Terminal Session...                      │",
+        "└──────────────────────────────────────────────────────────────────┘"
+      ].join("\n");
+    }
+  },
+  vm: {
+    desc: "Alias for linux command.",
+    action: () => commands.linux.action()
+  },
+  webvm: {
+    desc: "Alias for linux command.",
+    action: () => commands.linux.action()
+  },
+  v86: {
+    desc: "Boot v86 Alpine x86 Linux in browser.",
+    action: () => {
+      const btnV86 = document.getElementById("btn-engine-v86");
+      if (btnV86) btnV86.click();
+      setTimeout(() => {
+        switchTab("linux");
+      }, 500);
+      return "[+] Booting v86 (Alpine Linux) WebAssembly VM...";
     }
   },
   reboot: {
@@ -1188,3 +1224,160 @@ document.getElementById("music-toggle").addEventListener("click", () => {
     musicToggle.textContent = "🎵 PLAY MUSIC";
   }
 });
+
+// ==========================================
+// 3. IN-BROWSER REAL LINUX (WEBASSEMBLY) CONTROLLER
+// ==========================================
+let activeTab = "portfolio";
+let currentLinuxSrc = "https://webvm.io/";
+
+function switchTab(tabName) {
+  const tabPortfolio = document.getElementById("tab-portfolio");
+  const tabLinux = document.getElementById("tab-linux");
+  const shellContainer = document.getElementById("shell-container");
+  const linuxContainer = document.getElementById("linux-container");
+  const terminalBody = document.querySelector(".mac-terminal-body");
+  const tabIndicator = document.getElementById("terminal-tab-indicator");
+  const linuxIframe = document.getElementById("linux-iframe");
+
+  if (tabName === "linux") {
+    activeTab = "linux";
+    if (tabPortfolio) tabPortfolio.classList.remove("active");
+    if (tabLinux) tabLinux.classList.add("active");
+    if (shellContainer) shellContainer.style.display = "none";
+
+    // Close any simulated editors/monitors
+    const nano = document.getElementById("nano-editor");
+    const htop = document.getElementById("htop-monitor");
+    if (nano) nano.style.display = "none";
+    if (htop) htop.style.display = "none";
+
+    if (linuxContainer) linuxContainer.style.display = "flex";
+    if (terminalBody) terminalBody.classList.add("linux-active");
+    if (tabIndicator) tabIndicator.textContent = "Debian (WASM)";
+    if (winTitle) winTitle.textContent = "root@webvm-debian: ~ (bash)";
+    document.title = "root@webvm-debian: ~ (bash)";
+
+    // Lazy load the Linux WebAssembly VM iframe on first access
+    if (!linuxIframe.src || linuxIframe.src === "about:blank" || linuxIframe.src === window.location.href) {
+      loadLinuxEngine(currentLinuxSrc);
+    }
+  } else {
+    activeTab = "portfolio";
+    if (tabLinux) tabLinux.classList.remove("active");
+    if (tabPortfolio) tabPortfolio.classList.add("active");
+    if (linuxContainer) linuxContainer.style.display = "none";
+    if (shellContainer) shellContainer.style.display = "flex";
+    if (terminalBody) terminalBody.classList.remove("linux-active");
+    if (tabIndicator) tabIndicator.textContent = "TUI Session";
+    if (winTitle) winTitle.textContent = "Nee@nishant-terminal: ~ (zsh)";
+    document.title = "sudonishant | Security Researcher & Developer";
+    terminalInput.focus();
+  }
+}
+
+function loadLinuxEngine(url) {
+  const linuxIframe = document.getElementById("linux-iframe");
+  const linuxLoading = document.getElementById("linux-loading");
+  currentLinuxSrc = url;
+
+  if (linuxLoading) {
+    linuxLoading.style.display = "flex";
+    linuxLoading.style.opacity = "1";
+  }
+
+  linuxIframe.onload = () => {
+    setTimeout(() => {
+      if (linuxLoading) {
+        linuxLoading.style.opacity = "0";
+        setTimeout(() => {
+          linuxLoading.style.display = "none";
+        }, 300);
+      }
+    }, 1200);
+  };
+
+  linuxIframe.src = url;
+}
+
+// Tab navigation listeners
+const tabPortfolioBtn = document.getElementById("tab-portfolio");
+const tabLinuxBtn = document.getElementById("tab-linux");
+
+if (tabPortfolioBtn) {
+  tabPortfolioBtn.addEventListener("click", () => switchTab("portfolio"));
+}
+if (tabLinuxBtn) {
+  tabLinuxBtn.addEventListener("click", () => switchTab("linux"));
+}
+
+// In-Browser Linux Engine Switchers
+const btnEngineWebvm = document.getElementById("btn-engine-webvm");
+const btnEngineV86 = document.getElementById("btn-engine-v86");
+const btnReloadVm = document.getElementById("btn-reload-vm");
+const btnBackPortfolio = document.getElementById("btn-back-portfolio");
+
+if (btnEngineWebvm) {
+  btnEngineWebvm.addEventListener("click", () => {
+    btnEngineWebvm.classList.add("active");
+    if (btnEngineV86) btnEngineV86.classList.remove("active");
+    loadLinuxEngine("https://webvm.io/");
+    if (tabInd) tabInd.textContent = "Debian (WASM)";
+  });
+}
+
+if (btnEngineV86) {
+  btnEngineV86.addEventListener("click", () => {
+    btnEngineV86.classList.add("active");
+    if (btnEngineWebvm) btnEngineWebvm.classList.remove("active");
+    loadLinuxEngine("https://copy.sh/v86/?profile=linux");
+    if (tabInd) tabInd.textContent = "Alpine x86 (v86)";
+  });
+}
+
+if (btnReloadVm) {
+  btnReloadVm.addEventListener("click", () => {
+    loadLinuxEngine(currentLinuxSrc);
+  });
+}
+
+if (btnBackPortfolio) {
+  btnBackPortfolio.addEventListener("click", () => {
+    switchTab("portfolio");
+  });
+}
+
+// Window Dot Controls (macOS authentic behavior)
+const btnMaximize = document.getElementById("btn-maximize");
+const btnClose = document.getElementById("btn-close");
+const btnMinimize = document.getElementById("btn-minimize");
+const macTerminalEl = document.querySelector(".mac-terminal");
+
+if (btnMaximize) {
+  btnMaximize.addEventListener("click", () => {
+    macTerminalEl.classList.toggle("maximized");
+  });
+}
+
+if (btnClose) {
+  btnClose.addEventListener("click", () => {
+    if (activeTab === "linux") {
+      switchTab("portfolio");
+    } else {
+      terminalHistory.innerHTML = "";
+    }
+  });
+}
+
+if (btnMinimize) {
+  btnMinimize.addEventListener("click", () => {
+    macTerminalEl.style.transition = "transform 0.2s ease, opacity 0.2s ease";
+    macTerminalEl.style.transform = "scale(0.96)";
+    macTerminalEl.style.opacity = "0.7";
+    setTimeout(() => {
+      macTerminalEl.style.transform = "scale(1)";
+      macTerminalEl.style.opacity = "1";
+    }, 200);
+  });
+}
+

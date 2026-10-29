@@ -82,9 +82,9 @@ body, html {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 900px;
+  max-width: 950px;
   height: 85vh;
-  max-height: 600px;
+  max-height: 640px;
   background-color: var(--terminal-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -95,6 +95,14 @@ body, html {
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   overflow: hidden;
+  transition: max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s ease;
+}
+
+.mac-terminal.maximized {
+  max-width: 96vw;
+  max-height: 94vh;
+  height: 94vh;
+  border-radius: 8px;
 }
 
 /* macOS Window Header Bar */
@@ -103,16 +111,18 @@ body, html {
   align-items: center;
   justify-content: space-between;
   height: 42px;
-  padding: 0 18px;
+  padding: 0 14px;
   background-color: var(--header-bg);
   border-bottom: 1px solid var(--border-color);
   user-select: none;
   z-index: 10;
+  gap: 12px;
 }
 
 .window-controls {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .ctrl-dot {
@@ -120,6 +130,13 @@ body, html {
   height: 12px;
   border-radius: 50%;
   display: inline-block;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.ctrl-dot:hover {
+  transform: scale(1.2);
+  opacity: 0.85;
 }
 
 .dot-close {
@@ -134,15 +151,53 @@ body, html {
   background-color: var(--color-green-mac);
 }
 
-.window-title {
-  font-size: 13px;
+/* Native-style Header Tabs */
+.header-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.header-tab {
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.header-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.header-tab.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.3);
+  color: #fff;
   font-weight: 500;
-  letter-spacing: 0.2px;
-  text-align: center;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.header-tab.active .tab-icon {
+  filter: drop-shadow(0 0 3px rgba(0, 229, 255, 0.6));
+}
+
+.window-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .tab-indicator {
@@ -159,6 +214,13 @@ body, html {
   flex: 1;
   padding: 20px;
   overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.mac-terminal-body.linux-active {
+  padding: 0;
 }
 
 .terminal-container {
@@ -378,6 +440,156 @@ body, html {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* In-Browser Real Linux (WebAssembly) Styles */
+#linux-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  position: relative;
+  overflow: hidden;
+}
+
+.linux-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(14, 18, 24, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.linux-engine-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.linux-label {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.engine-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+}
+
+.engine-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-cyan);
+  color: #ffffff;
+}
+
+.engine-btn.active {
+  background: rgba(0, 229, 255, 0.18);
+  border-color: var(--color-cyan);
+  color: var(--color-cyan);
+  font-weight: 500;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+}
+
+.linux-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.linux-cost-tag {
+  color: var(--color-green);
+  background: rgba(0, 255, 102, 0.1);
+  border: 1px solid rgba(0, 255, 102, 0.25);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.linux-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+}
+
+.linux-btn:hover {
+  background: rgba(0, 255, 102, 0.15);
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.linux-iframe-wrapper {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  height: calc(100% - 37px);
+  background: #000000;
+}
+
+#linux-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000000;
+  display: block;
+}
+
+.linux-loading-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(3, 5, 8, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--color-cyan);
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 10;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.linux-loading-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 229, 255, 0.15);
+  border-top-color: var(--color-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   body, html {
@@ -389,9 +601,23 @@ body, html {
   }
   
   .mac-terminal {
-    height: 90vh;
+    height: 92vh;
     max-height: none;
     border-radius: 8px;
+  }
+  
+  .mac-terminal-header {
+    padding: 0 10px;
+    height: 38px;
+  }
+
+  .header-tab {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .tab-indicator {
+    display: none;
   }
   
   .welcome-banner {
@@ -401,6 +627,10 @@ body, html {
   
   #terminal-input {
     font-size: 12px;
+  }
+
+  .linux-cost-tag {
+    display: none;
   }
 }
 
