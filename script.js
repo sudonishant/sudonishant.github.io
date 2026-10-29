@@ -691,102 +691,179 @@ const commands = {
 
 // Filesystem command runners (ls, cd, mkdir, rmdir, touch, rm, cat)
 function executeLs(args) {
-  const node = getDirectoryNode(currentDir);
-  const rows = ["┌───────────────────────────────── DIRECTORY LISTING ───────────────────────────┐"];
-  
-  if (currentDir === "~") {
-    for (const [name, meta] of Object.entries(node)) {
-      const label = name + "/";
-      rows.push(`│  ${meta.perms}  1 Nee   staff      128 B  ${label.padEnd(25, " ")} │`);
-    }
-  } else {
-    for (const [name, content] of Object.entries(node.files)) {
-      const isConf = name === "confidential.bin";
-      const perms = isConf ? "-r--------" : "-rw-r--r--";
-      const size = isConf ? "1.0 KB" : "256 B";
-      const owner = isConf ? "root" : "Nee";
-      rows.push(`│  ${perms}  1 ${owner.padEnd(4, " ")}  staff     ${size.padStart(6, " ")}  ${name.padEnd(25, " ")} │`);
+  const parts = (args || "").trim().split(/\s+/).filter(Boolean);
+  const flags = parts.filter(p => p.startsWith("-")).join("");
+  const target = parts.find(p => !p.startsWith("-")) || "";
+
+  const isLong = flags.includes("l");
+  const isAll = flags.includes("a");
+
+  let targetPath = currentDir;
+  if (target) {
+    if (target === "~" || target === "/") {
+      targetPath = "~";
+    } else if (target === "..") {
+      if (currentDir !== "~") {
+        const p = currentDir.split("/");
+        p.pop();
+        targetPath = p.join("/") || "~";
+      } else {
+        targetPath = "~";
+      }
+    } else if (target === ".") {
+      targetPath = currentDir;
+    } else if (currentDir === "~" && filesystem["~"][target.toLowerCase()] && filesystem["~"][target.toLowerCase()].isDir) {
+      targetPath = `~/${target.toLowerCase()}`;
+    } else if (currentDir.startsWith("~/")) {
+      const parentNode = getDirectoryNode(currentDir);
+      if (parentNode && parentNode[target.toLowerCase()] && parentNode[target.toLowerCase()].isDir) {
+        targetPath = `${currentDir}/${target.toLowerCase()}`;
+      } else if (parentNode && parentNode.files && parentNode.files[target] !== undefined) {
+        if (isLong) {
+          const isConf = target === "confidential.bin" || target === "passwords.txt";
+          const perms = isConf ? "-r--------" : "-rw-r--r--";
+          const owner = isConf ? "root" : currentUser;
+          const group = isConf ? "root" : currentUser;
+          const size = String(parentNode.files[target].length || 256).padStart(6, " ");
+          return `${perms}  1 ${owner}  ${group}  ${size} Oct 29 17:30 ${target}`;
+        }
+        return target;
+      } else {
+        return `<span class='term-error'>ls: cannot access '${target}': No such file or directory</span>`;
+      }
+    } else {
+      return `<span class='term-error'>ls: cannot access '${target}': No such file or directory</span>`;
     }
   }
-  rows.push("└───────────────────────────────────────────────────────────────────────────────┘");
-  return rows.join("\n");
+
+  const node = getDirectoryNode(targetPath);
+  if (!node) {
+    return `<span class='term-error'>ls: cannot access '${target}': No such file or directory</span>`;
+  }
+
+  const entries = [];
+
+  if (targetPath === "~") {
+    if (isAll) {
+      entries.push({ name: ".", isDir: true, perms: "drwxr-xr-x", links: 5, owner: currentUser, group: currentUser, size: 4096 });
+      entries.push({ name: "..", isDir: true, perms: "drwxr-xr-x", links: 3, owner: "root", group: "root", size: 4096 });
+      entries.push({ name: ".bash_logout", isDir: false, perms: "-rw-r--r--", links: 1, owner: currentUser, group: currentUser, size: 220 });
+      entries.push({ name: ".bashrc", isDir: false, perms: "-rw-r--r--", links: 1, owner: currentUser, group: currentUser, size: 3526 });
+      entries.push({ name: ".profile", isDir: false, perms: "-rw-r--r--", links: 1, owner: currentUser, group: currentUser, size: 807 });
+      entries.push({ name: ".zshrc", isDir: false, perms: "-rw-r--r--", links: 1, owner: currentUser, group: currentUser, size: 1240 });
+    }
+    for (const [name, meta] of Object.entries(node)) {
+      if (meta && meta.isDir) {
+        entries.push({ name, isDir: true, perms: meta.perms || "drwxr-xr-x", links: 2, owner: currentUser, group: currentUser, size: 4096 });
+      }
+    }
+  } else {
+    if (isAll) {
+      entries.push({ name: ".", isDir: true, perms: "drwxr-xr-x", links: 2, owner: currentUser, group: currentUser, size: 4096 });
+      entries.push({ name: "..", isDir: true, perms: "drwxr-xr-x", links: 5, owner: currentUser, group: currentUser, size: 4096 });
+    }
+    if (node.files) {
+      for (const [name, content] of Object.entries(node.files)) {
+        const isConf = name === "confidential.bin" || name === "passwords.txt";
+        const perms = isConf ? "-r--------" : "-rw-r--r--";
+        const owner = isConf ? "root" : currentUser;
+        const group = isConf ? "root" : currentUser;
+        const size = typeof content === "string" ? content.length : 256;
+        entries.push({ name, isDir: false, perms, links: 1, owner, group, size });
+      }
+    }
+    for (const [name, meta] of Object.entries(node)) {
+      if (meta && meta.isDir) {
+        entries.push({ name, isDir: true, perms: meta.perms || "drwxr-xr-x", links: 2, owner: currentUser, group: currentUser, size: 4096 });
+      }
+    }
+  }
+
+  // Sort: dotfiles first, then alphabetical
+  entries.sort((a, b) => {
+    if (a.name === ".") return -1;
+    if (b.name === ".") return 1;
+    if (a.name === "..") return -1;
+    if (b.name === "..") return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  if (isLong) {
+    const totalK = Math.ceil(entries.reduce((acc, e) => acc + (e.size || 4096), 0) / 1024) * 4;
+    const rows = [`total ${totalK}`];
+    for (const item of entries) {
+      const p = item.perms.padEnd(10, " ");
+      const l = String(item.links).padStart(2, " ");
+      const o = item.owner.padEnd(4, " ");
+      const g = item.group.padEnd(4, " ");
+      const s = String(item.size).padStart(6, " ");
+      const date = "Oct 29 17:30";
+      
+      let styledName = item.name;
+      if (item.isDir) {
+        styledName = `<span style="color:#5dade2;font-weight:bold;">${item.name}</span>`;
+      } else if (item.name.endsWith(".py") || item.name.endsWith(".sh")) {
+        styledName = `<span style="color:#2ecc71;font-weight:bold;">${item.name}</span>`;
+      } else if (item.name === "passwords.txt" || item.name === "confidential.bin") {
+        styledName = `<span style="color:#ff5f56;font-weight:bold;">${item.name}</span>`;
+      } else if (item.name.endsWith(".lnk")) {
+        styledName = `<span style="color:#00e5ff;">${item.name}</span>`;
+      }
+      rows.push(`${p} ${l} ${o} ${g} ${s} ${date} ${styledName}`);
+    }
+    return rows.join("\n");
+  }
+
+  // Authentic compact Kali ls (colored, space separated)
+  const formatted = entries.map(item => {
+    if (item.isDir) {
+      return `<span style="color:#5dade2;font-weight:bold;">${item.name}</span>`;
+    } else if (item.name.endsWith(".py") || item.name.endsWith(".sh")) {
+      return `<span style="color:#2ecc71;font-weight:bold;">${item.name}</span>`;
+    } else if (item.name === "passwords.txt" || item.name === "confidential.bin") {
+      return `<span style="color:#ff5f56;font-weight:bold;">${item.name}</span>`;
+    } else if (item.name.endsWith(".lnk")) {
+      return `<span style="color:#00e5ff;">${item.name}</span>`;
+    }
+    return `<span>${item.name}</span>`;
+  });
+
+  return formatted.join("&nbsp;&nbsp;&nbsp;&nbsp;");
 }
 
 function executeCd(args) {
-  if (!args || args === "~") {
+  const target = (args || "").trim();
+  if (!target || target === "~") {
     currentDir = "~";
-    promptTilde.textContent = currentDir;
-    return getCdGuideHTML();
+    updatePrompt();
+    return "";
   }
-  if (args === "..") {
+  if (target === "..") {
     if (currentDir !== "~") {
-      currentDir = "~";
-      promptTilde.textContent = currentDir;
+      const parts = currentDir.split("/");
+      parts.pop();
+      currentDir = parts.join("/") || "~";
+      updatePrompt();
     }
-    return getCdGuideHTML();
+    return "";
   }
   
-  const cleanTarget = args.trim().toLowerCase();
+  const cleanTarget = target.toLowerCase();
   if (currentDir === "~") {
     if (filesystem["~"][cleanTarget] && filesystem["~"][cleanTarget].isDir) {
       currentDir = `~/${cleanTarget}`;
-      promptTilde.textContent = currentDir;
-      return getCdGuideHTML();
+      updatePrompt();
+      return "";
     }
   } else if (currentDir.startsWith("~/")) {
     const parentNode = getDirectoryNode(currentDir);
     if (parentNode && parentNode[cleanTarget] && parentNode[cleanTarget].isDir) {
       currentDir = `${currentDir}/${cleanTarget}`;
-      promptTilde.textContent = currentDir;
-      return getCdGuideHTML();
+      updatePrompt();
+      return "";
     }
   }
-  return `<span class='term-error'>cd: no such file or directory: ${args}</span>`;
-}
-
-// Generate automatic directory instructions when moving folders
-function getCdGuideHTML() {
-  if (currentDir === "~") {
-    return [
-      "<span class='term-cyan'>[+] Changed Directory: ~ (home)</span>",
-      "    Available Folders: <span class='term-green'>desktop/</span>, <span class='term-green'>documents/</span>, <span class='term-green'>downloads/</span>",
-      "    Type '<span class='term-green'>cd [folder]</span>' to navigate or '<span class='term-green'>help</span>' to show TUI commands."
-    ].join("\n");
-  }
-  if (currentDir === "~/desktop") {
-    return [
-      "<span class='term-cyan'>[+] Changed Directory: desktop/</span>",
-      "    Available Files: <span class='term-green'>welcome_note.txt</span>, <span class='term-green'>portfolio_shortcut.lnk</span>, <span class='term-green'>aadhaar.txt</span>, <span class='term-green'>passwords.txt</span>",
-      "    Type '<span class='term-green'>ls</span>' to view list, or '<span class='term-green'>cat [filename]</span>' to read files."
-    ].join("\n");
-  }
-  if (currentDir === "~/documents") {
-    return [
-      "<span class='term-cyan'>[+] Changed Directory: documents/</span>",
-      "    Available Files: <span class='term-green'>dossier.txt</span>, <span class='term-green'>skills.audit</span>, <span class='term-green'>projects.md</span>, <span class='term-green'>contact.key</span>",
-      "    Type '<span class='term-green'>cat dossier.txt</span>' or '<span class='term-green'>cat skills.audit</span>' to review dossier details."
-    ].join("\n");
-  }
-  if (currentDir === "~/downloads") {
-    return [
-      "<span class='term-cyan'>[+] Changed Directory: downloads/</span>",
-      "    Available Files: <span class='term-green'>pyscanner.py</span>",
-      "    Type '<span class='term-green'>cat pyscanner.py</span>' to review defensive Python security script code."
-    ].join("\n");
-  }
-  // If it's a cloned repo
-  if (currentDir.startsWith("~/") && currentDir.split("/").length > 2) {
-    const parts = currentDir.split("/");
-    const repoName = parts[parts.length - 1];
-    const node = getDirectoryNode(currentDir);
-    const filesList = Object.keys(node.files).join(", ");
-    return [
-      `<span class='term-cyan'>[+] Entered Repository Folder: ${repoName}/</span>`,
-      `    Available Files: <span class='term-green'>${filesList}</span>`,
-      "    Type '<span class='term-green'>ls</span>' to view list or '<span class='term-green'>cat README.md</span>' to read files."
-    ].join("\n");
-  }
-  return "";
+  return `<span class='term-error'>bash: cd: ${args}: No such file or directory</span>`;
 }
 
 function executeMkdir(name) {
@@ -803,7 +880,7 @@ function executeMkdir(name) {
   }
   
   saveFilesystem();
-  return `[+] Created directory: ${cleanName}`;
+  return "";
 }
 
 function executeRmdir(name) {
@@ -820,7 +897,7 @@ function executeRmdir(name) {
   }
   
   saveFilesystem();
-  return `[-] Removed directory: ${cleanName}`;
+  return "";
 }
 
 function executeTouch(name) {
@@ -829,37 +906,40 @@ function executeTouch(name) {
   const node = getDirectoryNode(currentDir);
   
   if (currentDir === "~") {
-    return "<span class='term-error'>touch: Files must be created inside sub-directories</span>";
+    return `<span class='term-error'>touch: cannot touch '${cleanName}': Permission denied</span>`;
   }
-  node.files[cleanName] = "[Empty File] Edit using nano editor.";
+  node.files[cleanName] = "";
   saveFilesystem();
-  return `[+] Created empty file: ${cleanName}`;
+  return "";
 }
 
 function executeRm(name) {
   if (!name) return "<span class='term-error'>rm: missing operand</span>";
-  const cleanName = name.replace("-rf", "").trim();
+  const cleanName = name.replace("-rf", "").replace("-r", "").replace("-f", "").trim();
   const node = getDirectoryNode(currentDir);
   
   if (currentDir === "~") {
     if (filesystem["~"][cleanName]) {
+      if (cleanName === "desktop" || cleanName === "documents" || cleanName === "downloads") {
+        return `<span class='term-error'>rm: cannot remove '${cleanName}': Is a directory</span>`;
+      }
       delete filesystem["~"][cleanName];
       saveFilesystem();
-      return `[-] Deleted directory: ${cleanName}`;
+      return "";
     }
     return `<span class='term-error'>rm: cannot remove '${name}': No such file or directory</span>`;
   }
   
-  if (node.files[cleanName]) {
+  if (node.files && node.files[cleanName] !== undefined) {
     delete node.files[cleanName];
     saveFilesystem();
-    return `[-] Deleted file: ${cleanName}`;
+    return "";
   }
   return `<span class='term-error'>rm: cannot remove '${name}': No such file or directory</span>`;
 }
 
 function executeCat(name) {
-  if (!name) return "<span class='term-error'>usage: cat [filename]</span>";
+  if (!name) return "<span class='term-error'>cat: missing operand</span>";
   const node = getDirectoryNode(currentDir);
   
   if (currentDir === "~") {
@@ -869,8 +949,8 @@ function executeCat(name) {
   
   const fileContent = node.files[name];
   if (fileContent !== undefined) {
-    if ((name === "confidential.bin" || name === "aadhaar.txt" || name === "passwords.txt") && !isRoot) {
-      return `<span class='term-error'>cat: ${name}: Permission denied</span><br><span style='color:var(--text-muted);'>[!] Protected root asset. Run: 'sudo cat ${name}' or 'sudo su'</span>`;
+    if ((name === "confidential.bin" || name === "passwords.txt") && !isRoot) {
+      return `<span class='term-error'>cat: ${name}: Permission denied</span>`;
     }
     return fileContent.replace(/\n/g, "<br>");
   }

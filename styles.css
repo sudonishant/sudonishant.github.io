@@ -483,3 +483,12 @@ body, html {
     box-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
   }
 }
+
+.terminal-output-block {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.45;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
