@@ -159,52 +159,171 @@ function updatePrompt() {
   }
 }
 
-// Default filesystem structure (serializable to JSON)
+// Default filesystem structure with authentic hacker files & witty twists
 const defaultFilesystem = {
   "~": {
     "desktop": {
       isDir: true,
       perms: "drwxr-xr-x",
       files: {
-        "welcome_note.txt": "Welcome to my desktop terminal portfolio!\nType 'help' to see the Kali Linux command manual.",
-        "portfolio_shortcut.lnk": "URL: https://sudonishant.github.io/\nStatus: Active Online Node",
+        "welcome_note.txt": [
+          "┌────────────────────────────────────────────────────────┐",
+          "│             NISHANT'S KALI WORKSTATION                 │",
+          "├────────────────────────────────────────────────────────┤",
+          "│  OS: Kali GNU/Linux 6.6.9-1kali1 (x86_64)              │",
+          "│  Shell: zsh 5.9 | User: nee@nishant-kali               │",
+          "│  Status: Active Penetration Testing Node               │",
+          "│                                                        │",
+          "│  Warning: Everything you type is monitored.            │",
+          "│  Type 'ls' to see desktop files.                       │",
+          "│  Type 'help' to show all Kali Linux commands.          │",
+          "└────────────────────────────────────────────────────────┘"
+        ].join("\n"),
         "aadhaar.txt": [
           "┌────────────────────────────────────────────────────────┐",
-          "│                 GOVERNMENT OF INDIA                    │",
-          "│  Name:   Neeshant Kumar                                │",
-          "│  DOB:    12/10/2007 (18 Years)                         │",
-          "│  Gender: Male                                          │",
+          "│                   [!] SECURITY ALERT [!]               │",
+          "├────────────────────────────────────────────────────────┤",
           "│                                                        │",
-          "│  AADHAAR NO: XXXX-XXXX-4321                            │",
+          "│   Abeee! Noob 💀 Mera details jankar kya karega?       │",
+          "│   Achha se apna kaam karo!                             │",
+          "│                                                        │",
+          "│   [+] Target IP: 192.168.1.1 (Trace successful 😂)     │",
+          "│   [+] Threat Level: Script Kiddie (Zero Risk)          │",
+          "│   [+] Real Info: Nishant Kumar | Ethical Hacker        │",
+          "│   [+] Portfolio: https://sudonishant.github.io/        │",
+          "│                                                        │",
+          "└────────────────────────────────────────────────────────┘"
+        ].join("\n"),
+        "dossier.txt": [
+          "┌────────────────────────────────────────────────────────┐",
+          "│             CONFIDENTIAL DOSSIER - LEVEL 4             │",
+          "├────────────────────────────────────────────────────────┤",
+          "│  Target: Nishant Kumar (alias: sudonishant)            │",
+          "│  Focus: Ethical Hacker | Security Researcher           │",
+          "│  Age: 18 | Base: Bihar, India                          │",
+          "│                                                        │",
+          "│  \"Abeee! Noob 💀 Mera details jankar kya karega?       │",
+          "│   Accha se apna kaam karo! Pehle Nmap scan seekh le.\"  │",
+          "│                                                        │",
+          "│  Philosophy: \"Find the crack before the bad guy does.\" │",
           "└────────────────────────────────────────────────────────┘"
         ].join("\n"),
         "passwords.txt": [
           "┌────────────────────────────────────────────────────────┐",
-          "│  Service         │ Username         │ Password         │",
-          "├──────────────────┼──────────────────┼──────────────────┤",
-          "│  GitHub          │ sudonishant      │ ************     │",
-          "│  Discord         │ sudonishant      │ ************     │",
-          "│  Local SSH       │ root             │ ************     │",
+          "│             ROOT SHADOW PASSWORD VAULT                 │",
+          "├────────────────────────────────────────────────────────┤",
+          "│  GitHub          │ sudonishant  │ ************         │",
+          "│  Discord         │ sudonishant  │ ************         │",
+          "│  SharmaJi_WiFi   │ WPA2         │ sharmaji_ki_chai_123 │",
+          "│  FBI_Backdoor    │ root         │ hunter2              │",
+          "│  Bank_PIN        │ ATM          │ \"Abeee Noob! Account │",
+          "│                  │              │  me ₹14 bache hain!😂│",
+          "│  Shadow_Hash     │ $6$rounds=50000$salt$k9z... (Crack) │",
           "└────────────────────────────────────────────────────────┘"
-        ].join("\n")
+        ].join("\n"),
+        "target_recon.txt": [
+          "┌────────────────────────────────────────────────────────┐",
+          "│              LIVE TARGET RECONNAISSANCE LOG            │",
+          "├────────────────────────────────────────────────────────┤",
+          "│  Scope: *.bugcrowd.com / *.hackerone.com targets       │",
+          "│  [+] Active Subdomains: 142 discovered                 │",
+          "│  [+] Open Ports: 22 (SSH), 80 (HTTP), 443 (HTTPS)      │",
+          "│  [!] Findings:                                         │",
+          "│      - Critical IDOR in billing invoice endpoint       │",
+          "│      - Blind SSRF triggered via webhook parser         │",
+          "│  [-] Note: Reported responsibly to security team.      │",
+          "│  [+] Status: Triaged / Bounty Pending 💰              │",
+          "└────────────────────────────────────────────────────────┘"
+        ].join("\n"),
+        "wifi_handshake.cap": [
+          "[WIFI 802.11 WPA2 4-WAY HANDSHAKE DUMP]",
+          "BSSID: 00:14:6C:7E:40:80 | ESSID: \"SharmaJi_HighSpeed_5G\"",
+          "Handshake captured: 14,290 EAPOL frames",
+          "Dictionary attack: rockyou.txt",
+          "Decrypted Key: \"sharmaji_ka_beta_engineer\"",
+          "Status: PWNED in 0.42 seconds. (Sharma ji ko pata na chale 🤫)"
+        ].join("\n"),
+        "fbi_warning.txt": [
+          "[!!! WARNING: UNLAWFUL ACCESS MONITORING ACTIVE !!!]",
+          "Federal Cyber Division (Honeypot Triggered)",
+          "Source: Client Browser via WebAssembly VM",
+          "Intruder Classification: Curious Visitor / Noob Explorer",
+          "Result: Abeee! Noob 💀 Dar gaya kya? Chill kar, ethical raho aur apna kaam karo!"
+        ].join("\n"),
+        "bank_balance.txt": [
+          "STATE BANK OF HACKERS:",
+          "Account Holder: Nishant Kumar",
+          "Available Balance: ₹14.30",
+          "Crypto Portfolio: 0.00000042 BTC",
+          "Status: Insufficient funds to buy Maggi.",
+          "\"Abeee! Noob, ethical hacker hu, Ambani nahi! Bug bounty aane de fir party karenge.\" 😂"
+        ].join("\n"),
+        "crush.txt": [
+          "ERROR 404: Relationship Not Found!",
+          "Exception: Too busy analyzing network packets and memory dumps.",
+          "Terminal is my only loyal companion. 💻❤️"
+        ].join("\n"),
+        "payloads.sh": [
+          "#!/bin/bash",
+          "# Nishant's Automated Penetration Payload",
+          "echo \"[*] Initializing quantum injection...\"",
+          "echo \"[+] Reverse shell established on 127.0.0.1:4444\"",
+          "echo \"💀 Abeee! Noob! Terminal me script run karke socha tu hacker ban gaya? Padhai pe dhyan de!\""
+        ].join("\n"),
+        "todo_hacks.txt": [
+          "NISHANT'S DAILY CHECKLIST:",
+          "[x] Wake up & update Kali packages (sudo apt update)",
+          "[x] Drink Adrak Chai ☕",
+          "[x] Test new SQL injection bypass script",
+          "[ ] Report sub-domain takeover to vulnerability disclosure program",
+          "[ ] Teach noobs why 'sudo rm -rf /' is fatal",
+          "[ ] Push latest code to GitHub"
+        ].join("\n"),
+        "skills.audit": [
+          "SKILLS AUDIT (REAL DATA):",
+          "Web Pentesting (OWASP Top 10): 85%",
+          "Network Recon (Nmap/Wireshark): 80%",
+          "Python Security Automation:    75%",
+          "Linux System Hardening:        80%",
+          "Reverse Engineering:           60%",
+          "Trolling Script Kiddies:       100% (Abeee Noob Level 💀)"
+        ].join("\n"),
+        "projects.md": [
+          "# NISHANT'S KEY PROJECTS",
+          "- OmniDetect AI: Media Forensics & Deepfake Detection Platform",
+          "- AetherSense: 3D WiFi Volumetric Occupancy Radar & Spatial Mapper",
+          "- PyScanner: Multi-threaded socket-level asynchronous port exploration tool",
+          "- LogShield: Intrusion detection & brute-force mitigation daemon",
+          "- ReconBot: Automated OSINT aggregator for target reconnaissance"
+        ].join("\n"),
+        "contact.key": [
+          "CONTACT DETAILS:",
+          "Email:    sudonishant@users.noreply.github.com",
+          "GitHub:   https://github.com/sudonishant",
+          "Discord:  sudonishant",
+          "LinkedIn: nishant-kumar-423870291"
+        ].join("\n"),
+        "portfolio_shortcut.lnk": "URL: https://sudonishant.github.io/\nStatus: Active Online Node"
       }
     },
     "documents": {
       isDir: true,
       perms: "drwxr-xr-x",
       files: {
-        "dossier.txt": "Identity: Neeshant (alias: sudonishant)\nFocus: Cyber Security Student & Ethical Hacker\nAge: 18 Years (Bihar, India)\nPhilosophy: Identify security gaps to patch them.",
-        "skills.audit": "System Hardening: 60%  (PAM / Firewalls)\nPython Scripting: 70%  (Scanners / Automation)\nWeb Pentesting:   65%  (OWASP Top 10)\nNetwork Recon:    60%  (Nmap / Wireshark)",
+        "dossier.txt": "Identity: Neeshant (alias: sudonishant)\nFocus: Cyber Security Student & Ethical Hacker\nAge: 18 Years (Bihar, India)\nWarning: Abeee! Noob 💀 Mera details jankar kya karega? Achha se apna kaam karo!",
+        "skills.audit": "System Hardening: 80%  (PAM / Firewalls)\nPython Scripting: 75%  (Scanners / Automation)\nWeb Pentesting:   85%  (OWASP Top 10)\nNetwork Recon:    80%  (Nmap / Wireshark)\nTrolling Noobs:   100% (Abeee Noob Level)",
         "projects.md": "- OmniDetect AI: Full-Stack Media Metadata Forensics & AI Detection Platform (https://github.com/sudonishant/omnidetect-ai).\n- AetherSense: 3D WiFi Volumetric Occupancy Radar & Spatial Mapper (https://github.com/sudonishant/aethersense).\n- PyScanner: Multi-threaded port scanner in Python.\n- LogShield: Bash failed login parser utility.\n- ReconBot: OSINT harvesting automation scripts.",
         "contact.key": "Email: sudonishant@users.noreply.github.com\nDiscord: sudonishant\nLinkedIn: nishant-kumar-423870291",
-        "confidential.bin": "[SENSITIVE DATA LAYER] Secure system logs locked."
+        "confidential.bin": "[SENSITIVE DATA LAYER] Secure system logs locked. (Abeee Noob! Sudo permission chahiye iske liye!)"
       }
     },
     "downloads": {
       isDir: true,
       perms: "drwxr-xr-x",
       files: {
-        "pyscanner.py": "# Multi-threaded port scanner - sudonishant\nimport socket\nimport threading\n\ndef scan_port(host, port):\n    try:\n        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n        s.settimeout(0.5)\n        if s.connect_ex((host, port)) == 0:\n            print(f'[+] Port {port} is OPEN')\n        s.close()\n    except:\n        pass"
+        "pyscanner.py": "# Multi-threaded port scanner - sudonishant\nimport socket\nimport threading\n\ndef scan_port(host, port):\n    try:\n        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n        s.settimeout(0.5)\n        if s.connect_ex((host, port)) == 0:\n            print(f'[+] Port {port} is OPEN')\n        s.close()\n    except:\n        pass",
+        "exploit_poc.py": "# PoC Exploit - Created by Nishant (sudonishant)\nprint('[*] Sending exploit payload...')\nprint('💀 Abeee! Noob! Mera details jankar kya karega? Jaake apna kaam kar!')",
+        "wordlist.txt": "admin\npassword\n123456\nadmin123\nsharmaji123\nhacker\npass@123\niloveyou"
       }
     }
   }
@@ -217,8 +336,10 @@ function saveFilesystem() {
 }
 
 function loadFilesystem() {
+  const version = "v4_twists";
+  const savedVersion = localStorage.getItem("nee_fs_version");
   const saved = localStorage.getItem("nee_terminal_fs");
-  if (saved) {
+  if (saved && savedVersion === version) {
     try {
       filesystem = JSON.parse(saved);
     } catch (e) {
@@ -226,6 +347,8 @@ function loadFilesystem() {
     }
   } else {
     filesystem = JSON.parse(JSON.stringify(defaultFilesystem));
+    localStorage.setItem("nee_fs_version", version);
+    saveFilesystem();
   }
 }
 loadFilesystem();
@@ -686,6 +809,49 @@ const commands = {
       triggerRebootSequence();
       return "";
     }
+  },
+  hack: {
+    desc: "Simulate automated cyber attack sequence.",
+    action: (target) => {
+      const tgt = target || "NASA";
+      return [
+        `[*] Initializing cyber attack sequence on: ${tgt}...`,
+        `[*] Resolving target DNS... 127.0.0.1 (Loopback)`,
+        `[*] Bypassing military-grade firewalls... [OK]`,
+        `[*] Injecting zero-day RCE vector... [SUCCESS]`,
+        `[*] Gaining root privileges on ${tgt}... [DONE]`,
+        `<span style='color:#ff5f56;font-weight:bold;'>💀 Abeee! Noob! ${tgt} hack karne se pehle thoda padhai toh kar le!</span>`,
+        `<span style='color:var(--text-muted);'>Real hacker bano bhai, movies dekh ke script kiddie mat bano! 😂</span>`
+      ].join("\n");
+    }
+  },
+  exploit: {
+    action: (target) => commands.hack.action(target)
+  },
+  wifi: {
+    action: () => [
+      `[*] Scanning airwaves for 802.11 beacon frames...`,
+      `[+] SSID: 'SharmaJi_HighSpeed_5G' | Signal: -42dBm | WPA2 | Status: PWNED 🔑`,
+      `[+] SSID: 'FBI_Surveillance_Van'  | Signal: -68dBm | WPA3 | Status: Honeypot 🚨`,
+      `[+] SSID: 'Free_WiFi_No_Virus'    | Signal: -80dBm | OPEN | Status: Trap 🪤`,
+      `<span style='color:#00ff66;'>Abeee! Noob, apna WiFi secure kar pehle!</span>`
+    ].join("\n")
+  },
+  crush: {
+    action: () => "ERROR 404: Girlfriend Not Found!\nTerminal & Kali Linux are my only true love. 💻❤️"
+  },
+  secret: {
+    action: () => "<span style='color:#ff5f56;font-weight:bold;'>💀 Abeee! Noob! Mera details jankar kya karega? Achha se apna kaam karo!</span>"
+  },
+  personal: {
+    action: () => "<span style='color:#ff5f56;font-weight:bold;'>💀 Abeee! Noob! Mera details jankar kya karega? Achha se apna kaam karo!</span>"
+  },
+  sharmaji: {
+    action: () => [
+      `[+] Target: Sharma Ji Ka Beta`,
+      `[-] Status: Currently topping college exams`,
+      `[!] Counter-measure: Pwned his home WiFi in 0.42 seconds using Hashcat.`
+    ].join("\n")
   }
 };
 
@@ -1315,6 +1481,15 @@ function runSingleCommand(rawCmd) {
   const trimmed = rawCmd.trim();
   if (!trimmed) return "";
 
+  if (trimmed.includes("rm -rf /") || trimmed.includes("rm -rf *") || trimmed.includes("rm -rf ~")) {
+    return [
+      "<span style='color:#ff5f56;font-weight:bold;'>[CRITICAL KERNEL ALERT] Deleting all root filesystem tables...</span>",
+      "rm: removing '/boot/vmlinuz-6.6.9' ... [FAIL]",
+      "rm: removing '/etc/shadow' ... [ACCESS DENIED]",
+      "<span style='color:#00ff66;font-weight:bold;'>💀 Abeee! Noob! Mera terminal udaane chala tha? Itni asani se Kali crash nahi hoti! 😂</span>"
+    ].join("\n");
+  }
+
   const spaceIndex = trimmed.indexOf(" ");
   let cmd = trimmed.toLowerCase();
   let args = "";
@@ -1445,7 +1620,8 @@ const commandNamesList = [
   "nmap", "sqlmap", "hydra", "apt", "apt-get", "curl", "wget", "history",
   "python3", "python", "git", "msfconsole", "clear", "reboot", "boot", "dmesg",
   "date", "uptime", "free", "df", "ps", "ip", "ifconfig", "netstat", "ss",
-  "sudo", "su", "exit", "echo", "grep", "wc", "head", "tail", "alias", "music"
+  "sudo", "su", "exit", "echo", "grep", "wc", "head", "tail", "alias", "music",
+  "hack", "wifi", "crush", "sharmaji", "secret"
 ];
 
 function handleTabCompletion() {
