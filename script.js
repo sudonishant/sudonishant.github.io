@@ -852,8 +852,144 @@ const commands = {
       `[-] Status: Currently topping college exams`,
       `[!] Counter-measure: Pwned his home WiFi in 0.42 seconds using Hashcat.`
     ].join("\n")
+  },
+  "real-linux": {
+    desc: "Boot Real x86 Linux Kernel inside browser via WebAssembly (v86).",
+    action: () => startRealLinux()
+  },
+  "boot-linux": {
+    desc: "Boot Real x86 Linux Kernel inside browser via WebAssembly (v86).",
+    action: () => startRealLinux()
+  },
+  v86: {
+    desc: "Boot Real x86 Linux Kernel inside browser via WebAssembly (v86).",
+    action: () => startRealLinux()
   }
 };
+
+// ──────────────────────────────────────────
+// REAL WEBASSEMBLY x86 LINUX ENGINE (v86)
+// ──────────────────────────────────────────
+let v86Emulator = null;
+let isV86Running = false;
+
+function appendV86Output(text) {
+  const div = document.createElement("div");
+  div.className = "terminal-output-block";
+  div.innerHTML = text;
+  terminalHistory.appendChild(div);
+  const container = document.querySelector(".terminal-container");
+  if (container) container.scrollTop = container.scrollHeight;
+}
+
+function startRealLinux() {
+  if (isV86Running) {
+    return "[!] Real x86 Linux emulator is already active. Type 'exit' to switch back.";
+  }
+
+  appendV86Output("<span class='term-green'>[*] Initializing Real x86 Linux Emulator (WebAssembly / v86)...</span>");
+  appendV86Output("[*] Allocating 64MB RAM in client WebAssembly memory space...");
+  appendV86Output("[*] Connecting serial console (ttyS0) to macOS Terminal display...");
+
+  const tabIndicator = document.getElementById("terminal-tab-indicator");
+  if (tabIndicator) tabIndicator.innerHTML = "⚡ Real x86 Linux (Wasm)";
+  const btnBootV86 = document.getElementById("btn-boot-v86");
+  if (btnBootV86) {
+    btnBootV86.textContent = "⏹ STOP REAL LINUX";
+    btnBootV86.style.borderColor = "#ff5f56";
+    btnBootV86.style.color = "#ff5f56";
+  }
+  const winTitle = document.getElementById("terminal-window-title");
+  if (winTitle) winTitle.textContent = "root@real-linux-x86: ~ (v86 ttyS0)";
+
+  function launchEmulator() {
+    try {
+      let v86Screen = document.getElementById("v86-screen-container");
+      if (!v86Screen) {
+        v86Screen = document.createElement("div");
+        v86Screen.id = "v86-screen-container";
+        v86Screen.style.display = "none";
+        document.body.appendChild(v86Screen);
+      }
+
+      v86Emulator = new window.V86({
+        wasm_path: "https://cdn.jsdelivr.net/npm/v86/build/v86.wasm",
+        memory_size: 64 * 1024 * 1024,
+        vga_memory_size: 2 * 1024 * 1024,
+        screen_container: v86Screen,
+        bios: {
+          url: "https://cdn.jsdelivr.net/npm/v86/bios/seabios.bin",
+        },
+        vga_bios: {
+          url: "https://cdn.jsdelivr.net/npm/v86/bios/vgabios.bin",
+        },
+        cdrom: {
+          url: "https://cdn.jsdelivr.net/npm/v86@0.5.472/images/linux.iso"
+        },
+        cmdline: "console=ttyS0 root=/dev/ram0 rw quiet",
+        autostart: true,
+        disable_keyboard: false
+      });
+
+      isV86Running = true;
+      let lineBuf = "";
+
+      v86Emulator.add_listener("serial0-output-byte", function(byte) {
+        const char = String.fromCharCode(byte);
+        if (char === "\r") return;
+        lineBuf += char;
+        if (char === "\n" || lineBuf.length > 100) {
+          appendV86Output(lineBuf.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+          lineBuf = "";
+        }
+      });
+
+      v86Emulator.add_listener("emulator-ready", function() {
+        appendV86Output("<span class='term-green'>[+] SeaBIOS started real x86 instruction execution. Linux booting via serial line...</span>");
+      });
+
+    } catch (e) {
+      appendV86Output(`<span class='term-error'>[!] Error starting real Linux: ${e.message}</span>`);
+    }
+  }
+
+  if (!window.V86) {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/v86/build/libv86.js";
+    script.onload = () => {
+      launchEmulator();
+    };
+    script.onerror = () => {
+      appendV86Output("<span class='term-error'>[!] Failed to load v86 Wasm engine from CDN. Check connection.</span>");
+    };
+    document.head.appendChild(script);
+  } else {
+    launchEmulator();
+  }
+
+  return "";
+}
+
+function stopRealLinux() {
+  if (v86Emulator) {
+    try {
+      v86Emulator.stop();
+      v86Emulator.destroy();
+    } catch (e) {}
+    v86Emulator = null;
+  }
+  isV86Running = false;
+  appendV86Output("<span class='term-green'>[+] Exited Real x86 Linux emulator session. Switched back to Kali GNU/Linux shell.</span>");
+  const tabIndicator = document.getElementById("terminal-tab-indicator");
+  if (tabIndicator) tabIndicator.innerHTML = "● Kali GNU/Linux";
+  const btnBootV86 = document.getElementById("btn-boot-v86");
+  if (btnBootV86) {
+    btnBootV86.textContent = "⚡ REAL LINUX (WASM)";
+    btnBootV86.style.borderColor = "#00ff66";
+    btnBootV86.style.color = "#00ff66";
+  }
+  updatePrompt();
+}
 
 // Filesystem command runners (ls, cd, mkdir, rmdir, touch, rm, cat)
 function executeLs(args) {
@@ -1781,6 +1917,22 @@ terminalInput.addEventListener("keydown", (event) => {
 
     if (inputVal === "") return;
 
+    // Route input directly to Real x86 Linux (v86 serial ttyS0)
+    if (isV86Running && v86Emulator) {
+      if (inputVal === "exit" || inputVal === "exit-v86") {
+        stopRealLinux();
+        return;
+      }
+      const commandLine = document.createElement("div");
+      commandLine.className = "terminal-command-echo";
+      commandLine.innerHTML = `<span style="color:#00e5ff;">real-x86#</span> <span class="term-input-echo">${inputVal}</span>`;
+      terminalHistory.appendChild(commandLine);
+      v86Emulator.serial0_send(inputVal + "\n");
+      const container = document.querySelector(".terminal-container");
+      if (container) container.scrollTop = container.scrollHeight;
+      return;
+    }
+
     commandHistory.push(inputVal);
     historyIndex = commandHistory.length;
 
@@ -1922,6 +2074,18 @@ if (btnMinimize) {
       macTerminalEl.style.transform = "scale(1)";
       macTerminalEl.style.opacity = "1";
     }, 200);
+  });
+}
+
+// Boot Real Linux Button Handler
+const btnBootV86 = document.getElementById("btn-boot-v86");
+if (btnBootV86) {
+  btnBootV86.addEventListener("click", () => {
+    if (isV86Running) {
+      stopRealLinux();
+    } else {
+      startRealLinux();
+    }
   });
 }
 
