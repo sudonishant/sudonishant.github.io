@@ -279,7 +279,8 @@ const commands = {
       return [
         "┌──────────────────────── AVAILABLE KALI SHELL COMMANDS ───────────────────┐",
         "│  <span class='term-green'>help</span>      - Show this interactive TUI shell guide.                  │",
-        "│  <span class='term-green'>linux</span>     - Boot Real Linux (WebAssembly) in browser (₹0 Cost).     │",
+        "│  <span class='term-green'>sudo</span>      - Execute command with superuser / root privileges.       │",
+        "│  <span class='term-green'>nmap</span>      - Network exploration tool and security / port scanner.   │",
         "│  <span class='term-green'>whoami</span>    - Print current user session details.                     │",
         "│  <span class='term-green'>pwd</span>       - Print name of current/working directory.                │",
         "│  <span class='term-green'>ls -la</span>    - List directory contents (directories and files).         │",
@@ -292,7 +293,7 @@ const commands = {
         "│  <span class='term-green'>neofetch</span>  - Show system specs next to Kali Linux ASCII logo.        │",
         "│  <span class='term-green'>uname -a</span>  - Print system information and kernel stats.              │",
         "│  <span class='term-green'>ping [tgt]</span>- Send ICMP echo requests to target host.                 │",
-        "│  <span class='term-green'>git clone</span> - Clone a simulated repository folder.                    │",
+        "│  <span class='term-green'>sqlmap</span>    - Automated SQL injection and database takeover tool.     │",
         "│  <span class='term-green'>msfconsole</span>- Open interactive Metasploit Framework shell.           │",
         "│  <span class='term-green'>clear</span>     - Clear terminal buffer.                                  │",
         "└──────────────────────────────────────────────────────────────────────────┘"
