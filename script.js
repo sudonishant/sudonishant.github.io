@@ -97,6 +97,7 @@ startMatrix();
 // ==========================================
 // 2. TERMINAL SHELL SIMULATOR
 // ==========================================
+const terminalDom = window.TerminalDom;
 const terminalInput = document.getElementById("terminal-input");
 const terminalHistory = document.getElementById("terminal-history");
 const promptTilde = document.querySelector(".prompt-tilde");
@@ -131,8 +132,11 @@ document.querySelector(".mac-terminal-body").addEventListener("click", () => {
 
 // Dynamic authentic prompt formatter
 function getPromptHTML() {
+  const safeUser = terminalDom.escapeHtml(currentUser);
+  const safeHost = terminalDom.escapeHtml(currentHost);
+  const safeDir = terminalDom.escapeHtml(currentDir);
   if (isPasswordPrompt) {
-    return `<span class="term-yellow">[sudo] password for ${currentUser}:</span>`;
+    return `<span class="term-yellow">[sudo] password for ${safeUser}:</span>`;
   }
   if (editorMode === "msf") {
     return `<span class="prompt-user">msf6</span> <span class="term-cyan">&gt;</span>`;
@@ -141,9 +145,9 @@ function getPromptHTML() {
     return `<span class="term-green">&gt;&gt;&gt;</span>`;
   }
   if (isRoot) {
-    return `<span class="prompt-root" style="color:#ff5f56;font-weight:700;">root</span>@<span class="prompt-host" style="color:#00e5ff;">${currentHost}</span>:<span class="prompt-tilde" style="color:#3b82f6;">${currentDir}</span>#`;
+    return `<span class="prompt-root" style="color:#ff5f56;font-weight:700;">root</span>@<span class="prompt-host" style="color:#00e5ff;">${safeHost}</span>:<span class="prompt-tilde" style="color:#3b82f6;">${safeDir}</span>#`;
   }
-  return `<span class="prompt-user" style="color:#00ff66;font-weight:600;">${currentUser}</span>@<span class="prompt-host" style="color:#00e5ff;">${currentHost}</span>:<span class="prompt-tilde" style="color:#3b82f6;">${currentDir}</span>$`;
+  return `<span class="prompt-user" style="color:#00ff66;font-weight:600;">${safeUser}</span>@<span class="prompt-host" style="color:#00e5ff;">${safeHost}</span>:<span class="prompt-tilde" style="color:#3b82f6;">${safeDir}</span>$`;
 }
 
 function updatePrompt() {
@@ -429,7 +433,7 @@ const commands = {
   },
   pwd: {
     desc: "Print current working directory.",
-    action: () => isRoot && currentDir === "~" ? "/root" : (currentDir === "~" ? `/home/${currentUser}` : `/home/${currentUser}/${currentDir.substring(2)}`)
+    action: () => isRoot && currentDir === "~" ? "/root" : (currentDir === "~" ? `/home/${terminalDom.escapeHtml(currentUser)}` : `/home/${terminalDom.escapeHtml(currentUser)}/${terminalDom.escapeHtml(currentDir.substring(2))}`)
   },
   uname: {
     action: () => "Linux nishant-kali 6.6.0-kali3-amd64 #1 SMP PREEMPT_DYNAMIC Kali 6.6.9-1kali1 (2026-01-08) x86_64 GNU/Linux"
@@ -520,11 +524,11 @@ const commands = {
     action: (target) => {
       if (!target) return "<span class='term-error'>ping: missing host operand</span>";
       return [
-        `PING ${target} (142.250.190.46) 56(84) bytes of data.`,
+        `PING ${terminalDom.escapeHtml(target)} (142.250.190.46) 56(84) bytes of data.`,
         `64 bytes from 142.250.190.46: icmp_seq=1 ttl=116 time=14.2 ms`,
         `64 bytes from 142.250.190.46: icmp_seq=2 ttl=116 time=15.1 ms`,
         `64 bytes from 142.250.190.46: icmp_seq=3 ttl=116 time=13.8 ms`,
-        `--- ${target} ping statistics ---`,
+        `--- ${terminalDom.escapeHtml(target)} ping statistics ---`,
         `3 packets transmitted, 3 received, 0% packet loss, time 2003ms`
       ].join("\n");
     }
@@ -579,23 +583,23 @@ const commands = {
     action: (tgt) => {
       const target = tgt || "google.com";
       return [
-        `; <<>> DiG 9.18.12-1-Debian <<>> ${target}`,
+        `; <<>> DiG 9.18.12-1-Debian <<>> ${terminalDom.escapeHtml(target)}`,
         `;; ANSWER SECTION:`,
-        `${target}.		300	IN	A	142.250.190.46`
+        `${terminalDom.escapeHtml(target)}.\t\t300\tIN\tA\t142.250.190.46`
       ].join("\n");
     }
   },
   nslookup: {
     action: (tgt) => {
       const target = tgt || "google.com";
-      return `Server:  1.1.1.1\nAddress: 1.1.1.1#53\n\nNon-authoritative answer:\nName:    ${target}\nAddress: 142.250.190.46`;
+      return `Server:  1.1.1.1\nAddress: 1.1.1.1#53\n\nNon-authoritative answer:\nName:    ${terminalDom.escapeHtml(target)}\nAddress: 142.250.190.46`;
     }
   },
   curl: {
-    action: (url) => `[+] Fetching connection details for ${url || "host"}...\n<span class='term-green'>HTTP/2 200 OK</span>\nServer: Nginx\nContent-Type: text/html`
+    action: (url) => `[+] Fetching connection details for ${terminalDom.escapeHtml(url || "host")}...\n<span class='term-green'>HTTP/2 200 OK</span>\nServer: Nginx\nContent-Type: text/html`
   },
   wget: {
-    action: (url) => `[+] Connecting to ${url || "host"}... connected.\n[+] HTTP request sent, awaiting response... 200 OK\n[+] Saving file output to local download buffer.`
+    action: (url) => `[+] Connecting to ${terminalDom.escapeHtml(url || "host")}... connected.\n[+] HTTP request sent, awaiting response... 200 OK\n[+] Saving file output to local download buffer.`
   },
   ps: {
     action: () => [
@@ -609,7 +613,7 @@ const commands = {
     desc: "Display shell command history.",
     action: () => {
       if (commandHistory.length === 0) return "  1  help";
-      return commandHistory.map((cmd, idx) => `  ${(idx + 1).toString().padStart(4, " ")}  ${cmd}`).join("\n");
+      return commandHistory.map((cmd, idx) => `  ${(idx + 1).toString().padStart(4, " ")}  ${terminalDom.escapeHtml(cmd)}`).join("\n");
     }
   },
   sudo: {
@@ -641,7 +645,7 @@ const commands = {
   },
   echo: {
     desc: "Write arguments to standard output.",
-    action: (args) => args || ""
+    action: (args) => terminalDom.escapeHtml(args || "")
   },
   nmap: {
     desc: "Network exploration tool and security / port scanner.",
@@ -649,9 +653,9 @@ const commands = {
       const target = args ? args.split(" ").filter(a => !a.startsWith("-")).pop() || "192.168.1.1" : "192.168.1.1";
       return [
         `Starting Nmap 7.94 ( https://nmap.org ) at ${new Date().toLocaleTimeString()} IST`,
-        `Initiating SYN Stealth Scan against ${target} [1000 ports]`,
-        `Scanning ${target} ... Done.`,
-        `Nmap scan report for ${target}`,
+        `Initiating SYN Stealth Scan against ${terminalDom.escapeHtml(target)} [1000 ports]`,
+        `Scanning ${terminalDom.escapeHtml(target)} ... Done.`,
+        `Nmap scan report for ${terminalDom.escapeHtml(target)}`,
         `Host is up (0.0019s latency).`,
         `Not shown: 996 closed tcp ports (reset)`,
         `PORT     STATE SERVICE    VERSION`,
@@ -681,7 +685,7 @@ const commands = {
         `      |_|V...       |_|   https://sqlmap.org`,
         ``,
         `[*] starting @ ${new Date().toLocaleTimeString()}`,
-        `[INFO] testing connection to the target URL: ${target}`,
+        `[INFO] testing connection to the target URL: ${terminalDom.escapeHtml(target)}`,
         `[INFO] testing if the target URL content is stable`,
         `[INFO] heuristics detected that the target parameter 'id' might be injectable`,
         `<span class='term-green'>[+] Parameter 'id' is vulnerable:</span>`,
@@ -732,24 +736,24 @@ const commands = {
           `Reading package lists... Done`,
           `Building dependency tree... Done`,
           `The following NEW packages will be installed:`,
-          `  ${pkg}`,
+          `  ${terminalDom.escapeHtml(pkg)}`,
           `0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.`,
           `Need to get 2,840 kB of archives.`,
-          `Get:1 http://http.kali.org/kali kali-rolling/main amd64 ${pkg} amd64 [2,840 kB]`,
+          `Get:1 http://http.kali.org/kali kali-rolling/main amd64 ${terminalDom.escapeHtml(pkg)} amd64 [2,840 kB]`,
           `Fetched 2,840 kB in 1s (3,120 kB/s)`,
-          `Selecting previously unselected package ${pkg}.`,
+          `Selecting previously unselected package ${terminalDom.escapeHtml(pkg)}.`,
           `(Reading database ... 385420 files and directories currently installed.)`,
-          `Preparing to unpack .../${pkg}_amd64.deb ...`,
-          `Unpacking ${pkg} (latest) ...`,
-          `Setting up ${pkg} (latest) ...`,
+          `Preparing to unpack .../${terminalDom.escapeHtml(pkg)}_amd64.deb ...`,
+          `Unpacking ${terminalDom.escapeHtml(pkg)} (latest) ...`,
+          `Setting up ${terminalDom.escapeHtml(pkg)} (latest) ...`,
           `Processing triggers for man-db (2.11.2-2) ...`,
-          `<span class='term-green'>[+] ${pkg} installed successfully.</span>`
+          `<span class='term-green'>[+] ${terminalDom.escapeHtml(pkg)} installed successfully.</span>`
         ].join("\n");
       }
       if (sub === "upgrade") {
         return "Reading package lists... Done\nBuilding dependency tree... Done\n0 upgraded, 0 newly installed, 0 to remove.";
       }
-      return `apt: '${sub}' executed successfully.`;
+      return `apt: '${terminalDom.escapeHtml(sub)}' executed successfully.`;
     }
   },
   "apt-get": {
@@ -760,12 +764,12 @@ const commands = {
     action: (args) => {
       const tgt = args || "8.8.8.8";
       return [
-        `traceroute to ${tgt} (${tgt}), 30 hops max, 60 byte packets`,
+        `traceroute to ${terminalDom.escapeHtml(tgt)} (${terminalDom.escapeHtml(tgt)}), 30 hops max, 60 byte packets`,
         ` 1  _gateway (192.168.1.1)  1.214 ms  1.102 ms  1.085 ms`,
         ` 2  10.124.0.1 (10.124.0.1)  4.812 ms  4.750 ms  4.680 ms`,
         ` 3  182.79.140.21 (airtel-gw)  8.120 ms  8.050 ms  7.990 ms`,
         ` 4  72.14.215.98 (google-peering)  12.340 ms  12.280 ms  12.190 ms`,
-        ` 5  dns.google (${tgt})  13.410 ms  13.350 ms  13.290 ms`
+        ` 5  dns.google (${terminalDom.escapeHtml(tgt)})  13.410 ms  13.350 ms  13.290 ms`
       ].join("\n");
     }
   },
@@ -815,12 +819,12 @@ const commands = {
     action: (target) => {
       const tgt = target || "NASA";
       return [
-        `[*] Initializing cyber attack sequence on: ${tgt}...`,
+        `[*] Initializing cyber attack sequence on: ${terminalDom.escapeHtml(tgt)}...`,
         `[*] Resolving target DNS... 127.0.0.1 (Loopback)`,
         `[*] Bypassing military-grade firewalls... [OK]`,
         `[*] Injecting zero-day RCE vector... [SUCCESS]`,
-        `[*] Gaining root privileges on ${tgt}... [DONE]`,
-        `<span style='color:#ff5f56;font-weight:bold;'>💀 Abeee! Noob! ${tgt} hack karne se pehle thoda padhai toh kar le!</span>`,
+        `[*] Gaining root privileges on ${terminalDom.escapeHtml(tgt)}... [DONE]`,
+        `<span style='color:#ff5f56;font-weight:bold;'>💀 Abeee! Noob! ${terminalDom.escapeHtml(tgt)} hack karne se pehle thoda padhai toh kar le!</span>`,
         `<span style='color:var(--text-muted);'>Real hacker bano bhai, movies dekh ke script kiddie mat bano! 😂</span>`
       ].join("\n");
     }
@@ -949,7 +953,7 @@ function startRealLinux() {
       });
 
     } catch (e) {
-      appendV86Output(`<span class='term-error'>[!] Error starting real Linux: ${e.message}</span>`);
+      appendV86Output(`<span class='term-error'>[!] Error starting real Linux: ${terminalDom.escapeHtml(e.message)}</span>`);
     }
   }
 
@@ -1027,20 +1031,20 @@ function executeLs(args) {
           const owner = isConf ? "root" : currentUser;
           const group = isConf ? "root" : currentUser;
           const size = String(parentNode.files[target].length || 256).padStart(6, " ");
-          return `${perms}  1 ${owner}  ${group}  ${size} Oct 29 17:30 ${target}`;
+          return `${perms}  1 ${owner}  ${group}  ${size} Oct 29 17:30 ${terminalDom.escapeHtml(target)}`;
         }
-        return target;
+        return terminalDom.escapeHtml(target);
       } else {
-        return `<span class='term-error'>ls: cannot access '${target}': No such file or directory</span>`;
+        return `<span class='term-error'>ls: cannot access '${terminalDom.escapeHtml(target)}': No such file or directory</span>`;
       }
     } else {
-      return `<span class='term-error'>ls: cannot access '${target}': No such file or directory</span>`;
+      return `<span class='term-error'>ls: cannot access '${terminalDom.escapeHtml(target)}': No such file or directory</span>`;
     }
   }
 
   const node = getDirectoryNode(targetPath);
   if (!node) {
-    return `<span class='term-error'>ls: cannot access '${target}': No such file or directory</span>`;
+    return `<span class='term-error'>ls: cannot access '${terminalDom.escapeHtml(target)}': No such file or directory</span>`;
   }
 
   const entries = [];
@@ -1101,15 +1105,16 @@ function executeLs(args) {
       const s = String(item.size).padStart(6, " ");
       const date = "Oct 29 17:30";
       
-      let styledName = item.name;
+      const safeName = terminalDom.escapeHtml(item.name);
+      let styledName = safeName;
       if (item.isDir) {
-        styledName = `<span style="color:#5dade2;font-weight:bold;">${item.name}</span>`;
+        styledName = `<span style="color:#5dade2;font-weight:bold;">${safeName}</span>`;
       } else if (item.name.endsWith(".py") || item.name.endsWith(".sh")) {
-        styledName = `<span style="color:#2ecc71;font-weight:bold;">${item.name}</span>`;
+        styledName = `<span style="color:#2ecc71;font-weight:bold;">${safeName}</span>`;
       } else if (item.name === "passwords.txt" || item.name === "confidential.bin") {
-        styledName = `<span style="color:#ff5f56;font-weight:bold;">${item.name}</span>`;
+        styledName = `<span style="color:#ff5f56;font-weight:bold;">${safeName}</span>`;
       } else if (item.name.endsWith(".lnk")) {
-        styledName = `<span style="color:#00e5ff;">${item.name}</span>`;
+        styledName = `<span style="color:#00e5ff;">${safeName}</span>`;
       }
       rows.push(`${p} ${l} ${o} ${g} ${s} ${date} ${styledName}`);
     }
@@ -1118,16 +1123,17 @@ function executeLs(args) {
 
   // Authentic compact Kali ls (colored, space separated)
   const formatted = entries.map(item => {
+    const safeName = terminalDom.escapeHtml(item.name);
     if (item.isDir) {
-      return `<span style="color:#5dade2;font-weight:bold;">${item.name}</span>`;
+      return `<span style="color:#5dade2;font-weight:bold;">${safeName}</span>`;
     } else if (item.name.endsWith(".py") || item.name.endsWith(".sh")) {
-      return `<span style="color:#2ecc71;font-weight:bold;">${item.name}</span>`;
+      return `<span style="color:#2ecc71;font-weight:bold;">${safeName}</span>`;
     } else if (item.name === "passwords.txt" || item.name === "confidential.bin") {
-      return `<span style="color:#ff5f56;font-weight:bold;">${item.name}</span>`;
+      return `<span style="color:#ff5f56;font-weight:bold;">${safeName}</span>`;
     } else if (item.name.endsWith(".lnk")) {
-      return `<span style="color:#00e5ff;">${item.name}</span>`;
+      return `<span style="color:#00e5ff;">${safeName}</span>`;
     }
-    return `<span>${item.name}</span>`;
+    return `<span>${safeName}</span>`;
   });
 
   return formatted.join("&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -1165,7 +1171,7 @@ function executeCd(args) {
       return "";
     }
   }
-  return `<span class='term-error'>bash: cd: ${args}: No such file or directory</span>`;
+  return `<span class='term-error'>bash: cd: ${terminalDom.escapeHtml(args)}: No such file or directory</span>`;
 }
 
 function executeMkdir(name) {
@@ -1173,11 +1179,11 @@ function executeMkdir(name) {
   const cleanName = name.trim().toLowerCase();
   
   if (currentDir === "~") {
-    if (filesystem["~"][cleanName]) return `<span class='term-error'>mkdir: cannot create directory '${name}': File exists</span>`;
+    if (filesystem["~"][cleanName]) return `<span class='term-error'>mkdir: cannot create directory '${terminalDom.escapeHtml(name)}': File exists</span>`;
     filesystem["~"][cleanName] = { isDir: true, perms: "drwxr-xr-x", files: {} };
   } else {
     const node = getDirectoryNode(currentDir);
-    if (node[cleanName]) return `<span class='term-error'>mkdir: cannot create directory '${name}': File exists</span>`;
+    if (node[cleanName]) return `<span class='term-error'>mkdir: cannot create directory '${terminalDom.escapeHtml(name)}': File exists</span>`;
     node[cleanName] = { isDir: true, perms: "drwxr-xr-x", files: {} };
   }
   
@@ -1190,11 +1196,11 @@ function executeRmdir(name) {
   const cleanName = name.trim().toLowerCase();
   
   if (currentDir === "~") {
-    if (!filesystem["~"][cleanName]) return `<span class='term-error'>rmdir: failed to remove '${name}': No such file or directory</span>`;
+    if (!filesystem["~"][cleanName]) return `<span class='term-error'>rmdir: failed to remove '${terminalDom.escapeHtml(name)}': No such file or directory</span>`;
     delete filesystem["~"][cleanName];
   } else {
     const node = getDirectoryNode(currentDir);
-    if (!node[cleanName]) return `<span class='term-error'>rmdir: failed to remove '${name}': No such file or directory</span>`;
+    if (!node[cleanName]) return `<span class='term-error'>rmdir: failed to remove '${terminalDom.escapeHtml(name)}': No such file or directory</span>`;
     delete node[cleanName];
   }
   
@@ -1208,7 +1214,7 @@ function executeTouch(name) {
   const node = getDirectoryNode(currentDir);
   
   if (currentDir === "~") {
-    return `<span class='term-error'>touch: cannot touch '${cleanName}': Permission denied</span>`;
+    return `<span class='term-error'>touch: cannot touch '${terminalDom.escapeHtml(cleanName)}': Permission denied</span>`;
   }
   node.files[cleanName] = "";
   saveFilesystem();
@@ -1223,13 +1229,13 @@ function executeRm(name) {
   if (currentDir === "~") {
     if (filesystem["~"][cleanName]) {
       if (cleanName === "desktop" || cleanName === "documents" || cleanName === "downloads") {
-        return `<span class='term-error'>rm: cannot remove '${cleanName}': Is a directory</span>`;
+        return `<span class='term-error'>rm: cannot remove '${terminalDom.escapeHtml(cleanName)}': Is a directory</span>`;
       }
       delete filesystem["~"][cleanName];
       saveFilesystem();
       return "";
     }
-    return `<span class='term-error'>rm: cannot remove '${name}': No such file or directory</span>`;
+    return `<span class='term-error'>rm: cannot remove '${terminalDom.escapeHtml(name)}': No such file or directory</span>`;
   }
   
   if (node.files && node.files[cleanName] !== undefined) {
@@ -1237,7 +1243,7 @@ function executeRm(name) {
     saveFilesystem();
     return "";
   }
-  return `<span class='term-error'>rm: cannot remove '${name}': No such file or directory</span>`;
+  return `<span class='term-error'>rm: cannot remove '${terminalDom.escapeHtml(name)}': No such file or directory</span>`;
 }
 
 function executeCat(name) {
@@ -1245,18 +1251,18 @@ function executeCat(name) {
   const node = getDirectoryNode(currentDir);
   
   if (currentDir === "~") {
-    if (filesystem["~"][name]) return `<span class='term-error'>cat: ${name}: Is a directory</span>`;
-    return `<span class='term-error'>cat: ${name}: No such file or directory</span>`;
+    if (filesystem["~"][name]) return `<span class='term-error'>cat: ${terminalDom.escapeHtml(name)}: Is a directory</span>`;
+    return `<span class='term-error'>cat: ${terminalDom.escapeHtml(name)}: No such file or directory</span>`;
   }
   
   const fileContent = node.files[name];
   if (fileContent !== undefined) {
     if ((name === "confidential.bin" || name === "passwords.txt") && !isRoot) {
-      return `<span class='term-error'>cat: ${name}: Permission denied</span>`;
+      return `<span class='term-error'>cat: ${terminalDom.escapeHtml(name)}: Permission denied</span>`;
     }
-    return fileContent.replace(/\n/g, "<br>");
+    return terminalDom.escapeHtml(fileContent).replace(/\n/g, "<br>");
   }
-  return `<span class='term-error'>cat: ${name}: No such file or directory</span>`;
+  return `<span class='term-error'>cat: ${terminalDom.escapeHtml(name)}: No such file or directory</span>`;
 }
 
 function executeLess(name) {
@@ -1285,7 +1291,7 @@ function executeWc(args) {
   const output = executeCat(file);
   if (output.startsWith("<span")) return output;
   const lines = output.split("<br>").length;
-  return `      ${lines} ${file}`;
+  return `      ${lines} ${terminalDom.escapeHtml(file)}`;
 }
 
 function executeGrep(args) {
@@ -1351,7 +1357,7 @@ function closeNano() {
   
   const saveEcho = document.createElement("div");
   saveEcho.className = "terminal-output-block";
-  saveEcho.innerHTML = `[+] nano: Saved changes to file '${filename}'.`;
+  saveEcho.textContent = `[+] nano: Saved changes to file '${filename}'.`;
   terminalHistory.appendChild(saveEcho);
   
   terminalInput.focus();
@@ -1477,14 +1483,14 @@ function executeFallbackKaliCommand(cmd, args) {
       saveFilesystem();
       
       return [
-        `Cloning into '${repoName}'...`,
+        `Cloning into '${terminalDom.escapeHtml(repoName)}'...`,
         "remote: Enumerating objects: 15, done.",
         "remote: Counting objects: 100% (15/15), done.",
         "remote: Compressing objects: 100% (10/10), done.",
         "Receiving objects: 100% (15/15), 4.25 KiB | 4.25 MiB/s, done.",
         "Resolving deltas: 100% (5/5), done.",
-        `<span class='term-green'>[+] Repository cloned successfully: ${repoName}/</span>`,
-        `Type 'cd ${repoName}' to enter the folder.`
+        `<span class='term-green'>[+] Repository cloned successfully: ${terminalDom.escapeHtml(repoName)}/</span>`,
+        `Type 'cd ${terminalDom.escapeHtml(repoName)}' to enter the folder.`
       ].join("\n");
     }
     
@@ -1500,7 +1506,7 @@ function executeFallbackKaliCommand(cmd, args) {
         "    Optimize welcome banner ASCII art spelling and box-alignment in TUI mode"
       ].join("\n");
     }
-    return `[+] git: execution success for parameter: '${args}'`;
+    return `[+] git: execution success for parameter: '${terminalDom.escapeHtml(args)}'`;
   }
   
   // Docker Command simulation
@@ -1508,7 +1514,7 @@ function executeFallbackKaliCommand(cmd, args) {
     if (args.includes("ps")) {
       return "CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS     NAMES\n7afa418aa4fb   nginx:alpine   \"/docker-entrypoint.…\"   2 hours ago     Up 2 hours     80/tcp    local-web";
     }
-    return `[+] docker: container initialized successfully: '${args}'`;
+    return `[+] docker: container initialized successfully: '${terminalDom.escapeHtml(args)}'`;
   }
   
   // Systemctl Service simulation
@@ -1528,16 +1534,16 @@ function executeFallbackKaliCommand(cmd, args) {
       if (args === "pyscanner.py" && currentDir === "~/downloads") {
         return "[+] Initializing PyScanner thread pool...\n[+] Scanning 127.0.0.1...\n[+] Port 80: OPEN\n[+] Port 443: OPEN\n[+] Done.";
       }
-      return `[+] python3: executed file '${args}' with exit status 0.`;
+      return `[+] python3: executed file '${terminalDom.escapeHtml(args)}' with exit status 0.`;
     }
   }
   
   // Compression & Archiving
   if (cleanCmd === "tar") {
-    return `[+] tar: package archiving processed successfully: ${args}`;
+    return `[+] tar: package archiving processed successfully: ${terminalDom.escapeHtml(args)}`;
   }
   if (cleanCmd === "zip" || cleanCmd === "unzip") {
-    return `[+] zip/unzip: operation complete: ${args}`;
+    return `[+] zip/unzip: operation complete: ${terminalDom.escapeHtml(args)}`;
   }
 
   // Compiler commands
@@ -1551,7 +1557,7 @@ function executeFallbackKaliCommand(cmd, args) {
     "diff", "patch", "env", "export", "set", "unset", "chmod", "chown", "nmcli"
   ];
   if (simulatedGeneralCommands.includes(cleanCmd)) {
-    return `[+] ${cmd}: execution success. Exit status 0.`;
+    return `[+] ${terminalDom.escapeHtml(cmd)}: execution success. Exit status 0.`;
   }
 
   return null;
@@ -1689,12 +1695,12 @@ function runSingleCommand(rawCmd) {
 
   if (cmd === "alias") {
     if (!args) {
-      return Object.entries(aliasMap).map(([k, v]) => `alias ${k}='${v}'`).join("\n");
+      return Object.entries(aliasMap).map(([k, v]) => `alias ${terminalDom.escapeHtml(k)}='${terminalDom.escapeHtml(v)}'`).join("\n");
     }
     const parts = args.split("=");
     if (parts.length === 2) {
       aliasMap[parts[0].trim()] = parts[1].replace(/'/g, "").trim();
-      return `[+] Set alias: ${parts[0]} -> ${parts[1]}`;
+      return `[+] Set alias: ${terminalDom.escapeHtml(parts[0])} -> ${terminalDom.escapeHtml(parts[1])}`;
     }
     return "<span class='term-error'>usage: alias name='command'</span>";
   }
@@ -1706,7 +1712,7 @@ function runSingleCommand(rawCmd) {
   const fallback = executeFallbackKaliCommand(cmd, args);
   if (fallback !== null) return fallback;
 
-  return `<span class='term-error'>zsh: command not found: ${cmd}. Type 'help' to show commands.</span>`;
+  return `<span class='term-error'>zsh: command not found: ${terminalDom.escapeHtml(cmd)}. Type 'help' to show commands.</span>`;
 }
 
 function handlePipeline(rawInput) {
@@ -1717,7 +1723,7 @@ function handlePipeline(rawInput) {
     const filePart = parts[1].trim();
     if (!filePart) return "<span class='term-error'>bash: syntax error near unexpected token 'newline'</span>";
     const res = runSingleCommand(cmdPart);
-    const plain = res.replace(/<[^>]+>/g, "");
+    const plain = terminalDom.decodeHtmlEntities(res.replace(/<[^>]+>/g, ""));
     executeWriteFile(filePart, plain, true);
     return "";
   }
@@ -1729,7 +1735,7 @@ function handlePipeline(rawInput) {
     const filePart = parts[1].trim();
     if (!filePart) return "<span class='term-error'>bash: syntax error near unexpected token 'newline'</span>";
     const res = runSingleCommand(cmdPart);
-    const plain = res.replace(/<[^>]+>/g, "");
+    const plain = terminalDom.decodeHtmlEntities(res.replace(/<[^>]+>/g, ""));
     executeWriteFile(filePart, plain, false);
     return "";
   }
@@ -1773,14 +1779,12 @@ function handleTabCompletion() {
     if (matches.length === 1) {
       terminalInput.value = matches[0] + " ";
     } else if (matches.length > 1) {
-      const echoDiv = document.createElement("div");
-      echoDiv.className = "terminal-command-echo";
-      echoDiv.innerHTML = `${getPromptHTML()} <span class="term-input-echo">${currentVal}</span>`;
+      const echoDiv = terminalDom.createCommandEcho(currentVal, getPromptHTML(), document);
       terminalHistory.appendChild(echoDiv);
 
       const listDiv = document.createElement("div");
       listDiv.className = "terminal-output-block";
-      listDiv.innerHTML = matches.map(m => `<span class='term-green'>${m}</span>`).join("    ");
+      listDiv.innerHTML = matches.map(m => `<span class='term-green'>${terminalDom.escapeHtml(m)}</span>`).join("    ");
       terminalHistory.appendChild(listDiv);
 
       const container = document.querySelector(".terminal-container");
@@ -1805,14 +1809,12 @@ function handleTabCompletion() {
     parts[parts.length - 1] = matches[0];
     terminalInput.value = parts.join(" ") + " ";
   } else if (matches.length > 1) {
-    const echoDiv = document.createElement("div");
-    echoDiv.className = "terminal-command-echo";
-    echoDiv.innerHTML = `${getPromptHTML()} <span class="term-input-echo">${currentVal}</span>`;
+    const echoDiv = terminalDom.createCommandEcho(currentVal, getPromptHTML(), document);
     terminalHistory.appendChild(echoDiv);
 
     const listDiv = document.createElement("div");
     listDiv.className = "terminal-output-block";
-    listDiv.innerHTML = matches.map(m => `<span class='term-cyan'>${m}</span>`).join("    ");
+    listDiv.innerHTML = matches.map(m => `<span class='term-cyan'>${terminalDom.escapeHtml(m)}</span>`).join("    ");
     terminalHistory.appendChild(listDiv);
 
     const container = document.querySelector(".terminal-container");
@@ -1825,9 +1827,7 @@ function handleCtrlC() {
     clearInterval(activeInterval);
     activeInterval = null;
   }
-  const echo = document.createElement("div");
-  echo.className = "terminal-command-echo";
-  echo.innerHTML = `${getPromptHTML()} <span class="term-input-echo">${terminalInput.value}^C</span>`;
+  const echo = terminalDom.createCommandEcho(`${terminalInput.value}^C`, getPromptHTML(), document);
   terminalHistory.appendChild(echo);
   terminalInput.value = "";
   isPasswordPrompt = false;
@@ -1888,7 +1888,7 @@ terminalInput.addEventListener("keydown", (event) => {
 
       const echoLine = document.createElement("div");
       echoLine.className = "terminal-command-echo";
-      echoLine.innerHTML = `<span class="term-yellow">[sudo] password for ${currentUser}:</span>`;
+      echoLine.innerHTML = `<span class="term-yellow">[sudo] password for ${terminalDom.escapeHtml(currentUser)}:</span>`;
       terminalHistory.appendChild(echoLine);
 
       const outDiv = document.createElement("div");
@@ -1923,9 +1923,7 @@ terminalInput.addEventListener("keydown", (event) => {
         stopRealLinux();
         return;
       }
-      const commandLine = document.createElement("div");
-      commandLine.className = "terminal-command-echo";
-      commandLine.innerHTML = `<span style="color:#00e5ff;">real-x86#</span> <span class="term-input-echo">${inputVal}</span>`;
+      const commandLine = terminalDom.createCommandEcho(inputVal, '<span style="color:#00e5ff;">real-x86#</span>', document);
       terminalHistory.appendChild(commandLine);
       v86Emulator.serial0_send(inputVal + "\n");
       const container = document.querySelector(".terminal-container");
@@ -1937,9 +1935,7 @@ terminalInput.addEventListener("keydown", (event) => {
     historyIndex = commandHistory.length;
 
     // 2. Echo command using authentic prompt
-    const commandLine = document.createElement("div");
-    commandLine.className = "terminal-command-echo";
-    commandLine.innerHTML = `${getPromptHTML()} <span class="term-input-echo">${inputVal}</span>`;
+    const commandLine = terminalDom.createCommandEcho(inputVal, getPromptHTML(), document);
     terminalHistory.appendChild(commandLine);
 
     const outputDiv = document.createElement("div");
@@ -1961,7 +1957,7 @@ terminalInput.addEventListener("keydown", (event) => {
             outputDiv.innerHTML = "  SyntaxError: invalid syntax";
           }
         } else {
-          outputDiv.innerHTML = `  NameError: name '${inputVal}' is not defined`;
+          outputDiv.textContent = `  NameError: name '${inputVal}' is not defined`;
         }
       }
       terminalHistory.appendChild(outputDiv);
@@ -1987,7 +1983,7 @@ terminalInput.addEventListener("keydown", (event) => {
       } else if (sub === "exploit" || sub === "run") {
         outputDiv.innerHTML = "[*] Injecting exploit trigger...\n[*] Target vulnerable!\n<span class='term-green'>[+] Session established: Meterpreter zsh console active.</span>";
       } else {
-        outputDiv.innerHTML = `[-] Unknown Metasploit command: ${inputVal}`;
+        outputDiv.textContent = `[-] Unknown Metasploit command: ${inputVal}`;
       }
       terminalHistory.appendChild(outputDiv);
       const container = document.querySelector(".terminal-container");
@@ -2091,4 +2087,3 @@ if (btnBootV86) {
 
 // Initialize prompt display
 updatePrompt();
-
